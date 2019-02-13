@@ -1,0 +1,8 @@
+---
+- name: Checkout cake php sample repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ playbook_dir }}/cakephp-ex"
+
+- name: Deploy cake php app
+  shell: "cd {{ playbook_dir }}/cakephp-ex && oc new-app openshift/templates/cakephp.json -p SOURCE_REPOSITORY_URL={{ repo_url }}"
