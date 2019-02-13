@@ -5,5 +5,5 @@
 
 - name: login to cluster
   vars:
-    kubeadmin_password: "{{ lookup('file', '{{ playbook_dir }}/kubeadmin_password') }}"
+    kubeadmin_password: "{{ ansible_env.kubeadmin_password }}"
   shell: oc login -u admin -p {{ kubeadmin_password }}
