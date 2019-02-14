@@ -1,6 +1,10 @@
 - hosts: localhost
+  vars_files:
+    - config.yml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  vars:
+    repo_url: https://github.com/sclorg/cakephp-ex
   roles:
   - login_ocp
   - role: deploy_cake_php
-  vars:
-    repo_url: https://github.com/sclorg/cakephp-ex

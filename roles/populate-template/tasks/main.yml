@@ -1,0 +1,23 @@
+- name: Create tmp directory
+  tempfile:
+      state: directory
+  register: temp_dir
+
+- name: Extract remote template
+  get_url:
+    url: "{{ url }}"
+    dest: "{{ temp_dir.path }}"
+  register: templ
+
+- name: Ensure files path exists
+  file:
+    path: "{{ role_path }}/files"
+    state: directory
+
+- name: Process and save the template
+  shell: "oc process -f {{ templ.dest }} -o yaml > {{ role_path }}/files/{{ templ.dest.split('/')[-1].split('.')[0] }}.yml"
+
+- name: Populate the template
+  command: "oc create -f {{ role_path }}/files/{{ templ.dest.split('/')[-1].split('.')[0] }}.yml"
+  ignore_errors: true
+  when: populate == true

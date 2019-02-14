@@ -1,4 +1,8 @@
 - hosts: localhost
+  vars_files:
+    - config.yml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
   vars:
     state: present
   roles:

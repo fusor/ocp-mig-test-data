@@ -1,0 +1,3 @@
+kubeconfig: "~/.kube/config"
+user: ""
+pass: ""

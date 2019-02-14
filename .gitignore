@@ -1,2 +1,4 @@
 *.retry
 cakephp-ex
+config.yml
+roles/populate-template/files/*

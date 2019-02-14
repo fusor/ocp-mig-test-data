@@ -1,0 +1,31 @@
+---
+- name: Downloading openshift quickstart examples
+  hosts: localhost
+  vars_files:
+    - config.yml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  roles:
+    - login_ocp
+  post_tasks:
+    - name: Downloading quckstart examples
+      include_role:
+        name: populate-template
+      vars:
+        url: "{{ item }}"
+        populate: false
+      with_items:
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/cakephp-mysql-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/cakephp-mysql.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/dancer-mysql-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/dancer-mysql.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/django-postgresql-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/django-postgresql.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/dotnet-pgsql-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/dotnet.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/httpd.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/nginx.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/nodejs-mongodb-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/nodejs-mongodb.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/rails-postgresql-persistent.json
+        - https://raw.githubusercontent.com/openshift/origin/master/examples/quickstarts/rails-postgresql.json
