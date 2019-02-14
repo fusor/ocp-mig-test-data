@@ -1,6 +1,0 @@
-- hosts: localhost
-  vars:
-    state: present
-  roles:
-  - login_ocp
-  - create_nginx

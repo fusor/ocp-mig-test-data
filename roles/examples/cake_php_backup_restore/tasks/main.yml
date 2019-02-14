@@ -1,0 +1,68 @@
+# Deploy cakephp
+- name: Create a namespace
+  shell: "oc new-project cakephp-example"
+
+- name: Deploy cakephp app
+  shell: "oc new-app -f https://raw.githubusercontent.com/sclorg/cakephp-ex/master/openshift/templates/cakephp.json"
+
+# Create a backup
+
+- name: Create ark backup of cakephp
+  k8s:
+    state : present
+    definition: "{{ lookup('file', 'create-backup.yml')}}"
+
+- name: Wait for backup to complete
+  debug:
+    var: backup
+  until: backup and backup.status.get("phase", 0) == "Completed"
+  retries: 10
+  delay: 5
+  vars:
+    backup: '{{ lookup("k8s",
+      kind="Backup",
+      api_version="ark.heptio.com/v1",
+      namespace="heptio-ark"
+    )}}'
+
+# Simulate DR and restore
+- name: Delete cake php app
+  shell: "oc delete project cakephp-example"
+
+- name: Create ark restore of cakephp
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'create-restore.yml')}}"
+
+- name: Wait for restore to finish
+  debug:
+    var: restore
+  until: restore and restore.status.get("phase", 0) == "Completed"
+  retries: 20
+  delay: 10
+  vars:
+    restore: '{{ lookup("k8s",
+      kind="Restore",
+      api_version="ark.heptio.com/v1",
+      namespace="heptio-ark",
+      resource_name="cakephp-backup"
+    )}}'
+
+- name: Wait for cakephp deployment
+  debug:
+    var: deploy
+  until: deploy and deploy.status.replicas == deploy.status.get("availableReplicas", 0)
+  retries: 10
+  delay: 10
+  vars:
+    deploy: '{{ lookup("k8s",
+      kind="Deployment",
+      api_version="v1",
+      namespace="cakephp-example",
+      label_selector="app=cakephp-example"
+    )}}'
+
+- name: Delete ark restore of cakephp (workaround to use common name for restore)
+  k8s:
+    state: absent
+    definition: "{{ lookup('file', 'create-restore.yml')}}"
