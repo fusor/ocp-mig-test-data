@@ -1,0 +1,14 @@
+---
+apiVersion: ark.heptio.com/v1
+kind: Backup
+metadata:
+  name: hellopod-backup
+  namespace: heptio-ark
+spec:
+  labelSelector:
+    matchLabels:
+      name: hello-openshift
+  storageLocation: default
+  ttl: 720h0m0s
+  includedNamespaces:
+  - '*'
