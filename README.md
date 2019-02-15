@@ -18,9 +18,8 @@ We need to keep track of supported and unsupported test cases.
 * Tests cases that are expected to succeed:
 
   - Basic app example -  ```nginx```
+  - Pod - ```pod```
 
 * Tests cases that are expected to fail:
 
   - S2I - ```cake-php```
-
-

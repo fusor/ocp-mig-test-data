@@ -2,4 +2,5 @@
   vars:
     state: present
   roles:
+  - login_ocp
   - basic_app_examples/nginx_backup_restore
