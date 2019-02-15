@@ -2,10 +2,10 @@
 apiVersion: ark.heptio.com/v1
 kind: Restore
 metadata:
-  name: cakephp-example
+  name: cakephp-backup
   namespace: heptio-ark
 spec:
-  backupName: cakephp-example
+  backupName: cakephp-backup
   excludedResources:
   - node
   - events

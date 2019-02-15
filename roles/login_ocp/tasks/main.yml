@@ -6,4 +6,4 @@
 - name: login to cluster
   vars:
     kubeadmin_password: "{{ ansible_env.kubeadmin_password }}"
-  shell: oc login -u admin -p {{ kubeadmin_password }}
+  shell: oc login -u {{ user }} -p {{ kubeadmin_password }}

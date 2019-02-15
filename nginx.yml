@@ -1,8 +1,5 @@
 - hosts: localhost
   vars:
     state: present
-  environment:
-    KUBECONFIG: "{{ playbook_dir }}/auth/kubeconfig"
   roles:
-  - login_ocp
-  - examples/nginx_backup_restore
+  - basic_app_examples/nginx_backup_restore

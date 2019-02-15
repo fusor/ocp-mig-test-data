@@ -1,4 +1,8 @@
 - hosts: localhost
+  vars_prompt:
+    - name: user
+      prompt: "Cluster login"
+      private: no
   roles:
   - login_ocp
-  - examples/cake_php_backup_restore
+  - s2i/cake_php_backup_restore
