@@ -1,6 +1,8 @@
 - hosts: localhost
+  vars_prompt:
+    - name: user
+      prompt: "Cluster login"
+      private: no
   roles:
   - login_ocp
-  - role: deploy_cake_php
-  vars:
-    repo_url: https://github.com/sclorg/cakephp-ex
+  - s2i/cake_php_backup_restore
