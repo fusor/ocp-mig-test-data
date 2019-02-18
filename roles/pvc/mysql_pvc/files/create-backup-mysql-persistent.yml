@@ -1,0 +1,14 @@
+---
+apiVersion: ark.heptio.com/v1
+kind: Backup
+metadata:
+  name: mysql-persistent-backup
+  namespace: heptio-ark
+spec:
+  labelSelector:
+    matchLabels:
+      app: mysql
+  storageLocation: default
+  ttl: 720h0m0s
+  includedNamespaces:
+  - '*'
