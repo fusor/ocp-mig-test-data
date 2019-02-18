@@ -1,0 +1,149 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: cakephp-example
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+stringData:
+  cakephp-secret-token: UNSAFE_CAKEPHP_SECRET_TOKEN
+  cakephp-security-salt: UNSAFE_CAKEPHP_SECURITY_SALT
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+  annotations:
+    description: Exposes and load balances the application pods
+spec:
+  ports:
+  - name: web
+    port: 8080
+    targetPort: 8080
+  selector:
+    name: cakephp-example
+---
+kind: Route
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+spec:
+  to:
+    kind: Service
+    name: cakephp-example
+---    
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+  annotations:
+    description: Keeps track of changes in the application image
+---
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+  annotations:
+    description: Defines how to build the application
+    template.alpha.openshift.io/wait-for-ready: 'true'
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/sclorg/cakephp-ex.git
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: php:7.1
+      env:
+      - name: COMPOSER_MIRROR
+        value: ''
+  output:
+    to:
+      kind: ImageStreamTag
+      name: cakephp-example:latest
+  triggers:
+  - type: ImageChange
+  - type: ConfigChange
+  - type: GitHub
+    github:
+      secret: UNSAFE_GITHUB_WEBHOOK_SECRET
+  postCommit:
+    script: "./vendor/bin/phpunit"
+---
+kind: DeploymentConfig
+apiVersion: v1
+metadata:
+  name: cakephp-example
+  namespace: cakephp-example
+  annotations:
+    description: Defines how to deploy the application server
+    template.alpha.openshift.io/wait-for-ready: 'true'
+spec:
+  strategy:
+    type: Rolling
+  triggers:
+  - type: ImageChange
+    imageChangeParams:
+      automatic: true
+      containerNames:
+      - cakephp-example
+      from:
+        kind: ImageStreamTag
+        name: cakephp-example:latest
+  - type: ConfigChange
+  replicas: 1
+  selector:
+    name: cakephp-example
+  template:
+    metadata:
+      name: cakephp-example
+      labels:
+        name: cakephp-example
+    spec:
+      containers:
+      - name: cakephp-example
+        image: " "
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          timeoutSeconds: 3
+          initialDelaySeconds: 3
+          periodSeconds: 60
+          httpGet:
+            path: "/"
+            port: 8080
+        livenessProbe:
+          timeoutSeconds: 3
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          httpGet:
+            path: "/"
+            port: 8080
+        env:
+        - name: CAKEPHP_SECRET_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cakephp-example
+              key: cakephp-secret-token
+        - name: CAKEPHP_SECURITY_SALT
+          valueFrom:
+            secretKeyRef:
+              name: cakephp-example
+              key: cakephp-security-salt
+        - name: OPCACHE_REVALIDATE_FREQ
+          value: '2'
+        resources:
+          limits:
+            memory: 521Mi
