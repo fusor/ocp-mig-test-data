@@ -5,4 +5,4 @@
       private: no
   roles:
   - login_ocp
-  - s2i/cake_php_backup_restore
+  - s2i/cakephp_backup_restore

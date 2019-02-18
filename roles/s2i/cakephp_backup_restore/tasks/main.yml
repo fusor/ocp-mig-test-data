@@ -1,9 +1,8 @@
 # Deploy cakephp
-- name: Create a namespace
-  shell: "oc new-project cakephp-example"
-
-- name: Deploy cakephp app
-  shell: "oc new-app -f https://raw.githubusercontent.com/sclorg/cakephp-ex/master/openshift/templates/cakephp.json"
+- name: Deploy cakephp from yml
+  k8s:
+    state : present
+    definition: "{{ lookup('file', 'cakephp-template.yml')}}"
 
 - name: Wait for cakephp deployment
   debug:
@@ -19,7 +18,6 @@
     )}}'
 
 # Create a backup
-
 - name: Create ark backup of cakephp
   k8s:
     state : present
@@ -40,7 +38,7 @@
     )}}'
 
 # Simulate DR and restore
-- name: Delete cake php app
+- name: Delete cakephp app
   k8s:
     state: absent
     definition:

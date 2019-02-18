@@ -2,7 +2,7 @@
 - name: Deploy hello pod
   k8s:
     state: present
-    definition: "{{ lookup('file', 'hello-pod.yml')}}"
+    definition: "{{ lookup('file', 'hellopod-template.yml')}}"
 
 - name: Wait for pod to run
   debug:
