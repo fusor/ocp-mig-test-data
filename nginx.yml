@@ -1,6 +1,10 @@
 - hosts: localhost
   vars:
     state: present
+  vars_prompt:
+    - name: user
+      prompt: "Cluster login"
+      private: no
   roles:
   - login_ocp
   - basic_app_examples/nginx_backup_restore
