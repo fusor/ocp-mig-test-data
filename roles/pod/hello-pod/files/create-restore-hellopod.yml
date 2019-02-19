@@ -2,7 +2,7 @@
 apiVersion: ark.heptio.com/v1
 kind: Restore
 metadata:
-  name: hellopod-backup
+  name: hellopod-restore
   namespace: heptio-ark
 spec:
   backupName: hellopod-backup
