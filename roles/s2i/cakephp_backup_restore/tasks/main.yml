@@ -9,7 +9,7 @@
     var: pod
   until: pod and pod.status.phase == "Running"
   retries: 20
-  delay: 30
+  delay: 10
   vars:
     pod: '{{ lookup("k8s",
       kind="Pod",
@@ -80,6 +80,7 @@
       resource_name="cakephp-restore"
     )}}'
 
+# Check every restored resource
 - name: Wait for cakephp deployment
   debug:
     var: pod
@@ -94,7 +95,73 @@
       label_selector="deployment=cakephp-example-1"
     )}}'
 
-- name: Delete ark restore of cakephp (workaround to use common name for restore)
+- name: Check for restored secrets
+  debug:
+    var: secrets
+  until: secrets
+  retries: 20
+  delay: 30
+  vars:
+    secrets: '{{ lookup("k8s",
+      kind="Secret",
+      namespace="cakephp-example",
+      resource_name="cakephp-example"
+    )}}'
+
+- name: Check for restored service
+  debug:
+    var: service
+  until: service
+  retries: 20
+  delay: 30
+  vars:
+    service: '{{ lookup("k8s",
+      kind="Service",
+      namespace="cakephp-example",
+      resource_name="cakephp-example"
+    )}}'
+
+- name: Check for restored route
+  debug:
+    var: route
+  until: route
+  retries: 20
+  delay: 30
+  vars:
+    route: '{{ lookup("k8s",
+      kind="Route",
+      namespace="cakephp-example",
+      resource_name="cakephp-example"
+    )}}'
+
+- name: Check for restored build config
+  debug:
+    var: bc
+  until: bc
+  retries: 20
+  delay: 30
+  vars:
+    bc: '{{ lookup("k8s",
+      kind="BuildConfig",
+      namespace="cakephp-example",
+      resource_name="cakephp-example"
+    )}}'
+
+- name: Check for restored deployment config
+  debug:
+    var: dc
+  until: dc
+  retries: 20
+  delay: 30
+  vars:
+    dc: '{{ lookup("k8s",
+      kind="DeploymentConfig",
+      namespace="cakephp-example",
+      resource_name="cakephp-example"
+    )}}'
+
+
+- name: Delete ark restore of cakephp
   k8s:
     state: absent
     definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
