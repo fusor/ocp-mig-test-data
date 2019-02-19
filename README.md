@@ -19,6 +19,7 @@ We need to keep track of supported and unsupported test cases.
 
   - Basic app example -  ```nginx```
   - Pod - ```pod```
+  - Image Stream - ```mysql-centos7-is```
 
 * Tests cases that are expected to fail:
 
