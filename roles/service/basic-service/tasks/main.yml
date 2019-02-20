@@ -1,0 +1,74 @@
+---
+- name: Create service example
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'service-template.yml') }}"
+
+- name: Wait 30 seconds for resource become available
+  k8s_facts:
+    kind: Service
+    api_version: v1
+    namespace: service-example
+    label_selectors: "name=my-service"
+  register: deploy
+  until: deploy 
+  retries: 6
+  delay: 5
+
+- name: Create ark backup
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'create-backup-basic-service.yml') }}"
+
+- name: Wait for ark to finish backup
+  k8s_facts:
+    kind: Backup
+    namespace: heptio-ark
+    name: service-basic-backup
+  register: backup
+  until: backup and backup.resources[0].status.phase == 'Completed'
+  retries: 20
+  delay: 5
+
+- name: Delete service namespace
+  k8s:
+    state: absent
+    definition: "{{ lookup('file', 'service-template.yml') }}"
+
+- name: Wait for delete completion
+  k8s_facts:
+    kind: Namespace
+    name: service-example
+  register: delete
+  until: delete.resources == []
+  retries: 20
+  delay: 6
+
+- name: Restore ark backup
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'restore-backup-basic-service.yml') }}"
+
+- name: Wait for restore to finish
+  k8s_facts:
+    kind: Restore
+    namespace: heptio-ark
+    name: service-basic-backup
+  register: restore
+  until: restore and restore.resources[0].status.phase == "Completed"
+  retries: 20
+  delay: 6
+
+- name: Remove old restore
+  k8s:
+    state: absent
+    definition: "{{ lookup('file', 'restore-backup-basic-service.yml') }}"
+
+- name: Check if service was created
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'service-template.yml') }}"
+  register: result
+  failed_when: result.changed == true
+
+
