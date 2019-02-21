@@ -1,0 +1,8 @@
+- hosts: localhost
+  vars_prompt:
+    - name: user
+      prompt: "Cluster login"
+      private: no
+  roles:
+  - login_ocp
+  - deployment/hello-pod
