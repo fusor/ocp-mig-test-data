@@ -1,0 +1,45 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: basic-sa-role
+  labels:
+    app: basic-sa-role
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: basic-sa
+  namespace: basic-sa-role
+  labels:
+    app: basic-sa-role
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: basic-role
+  namespace: basic-sa-role
+  labels:
+    app: basic-sa-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: basic-role-binding
+  namespace: basic-sa-role
+  labels:
+    app: basic-sa-role
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: basic-role
+subjects:
+- kind: ServiceAccount
+  name: basic-sa
