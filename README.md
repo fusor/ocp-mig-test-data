@@ -26,3 +26,10 @@ We need to keep track of supported and unsupported test cases.
 
   - S2I - ```cakephp```
   - PVC - ```mysql-pvc```
+  - Service - ```service```
+
+    Steps to reproduce:
+
+    - execute ```ansible-playbook service.yml -vvv```.
+
+    Last task will fail becauce Ark in it's current form does not support backup and restore for `LoadBalancer` service type and does not restore `.spec.ports.nodePort` element from the `NodePort` type.
