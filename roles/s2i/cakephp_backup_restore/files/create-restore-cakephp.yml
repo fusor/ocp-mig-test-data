@@ -2,7 +2,7 @@
 apiVersion: ark.heptio.com/v1
 kind: Restore
 metadata:
-  name: cakephp-backup
+  name: cakephp-restore
   namespace: heptio-ark
 spec:
   backupName: cakephp-backup
