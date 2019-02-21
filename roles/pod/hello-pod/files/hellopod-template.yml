@@ -3,6 +3,8 @@ kind: Namespace
 apiVersion: v1
 metadata:
   name: hello-pod
+  labels:
+    name: hello-openshift
 ---
 kind: Pod
 apiVersion: v1

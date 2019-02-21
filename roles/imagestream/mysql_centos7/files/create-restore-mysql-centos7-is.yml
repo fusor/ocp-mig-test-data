@@ -2,10 +2,10 @@
 apiVersion: ark.heptio.com/v1
 kind: Restore
 metadata:
-  name: hellopod-restore
+  name: mysql-centos7-imagestream-restore
   namespace: heptio-ark
 spec:
-  backupName: hellopod-backup
+  backupName: mysql-centos7-imagestream-backup
   excludedResources:
   - node
   - events

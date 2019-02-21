@@ -76,7 +76,7 @@
       kind="Restore",
       api_version="ark.heptio.com/v1",
       namespace="heptio-ark",
-      resource_name="hellopod-backup"
+      resource_name="hellopod-restore"
     )}}'
 
 - name: Wait for pod to run
