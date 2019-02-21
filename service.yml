@@ -1,3 +1,4 @@
 - hosts: localhost
   roles:
+    - login_ocp
     - service/basic-service
