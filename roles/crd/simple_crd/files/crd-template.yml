@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crd-example
+  labels:
+    name: crd-example
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: crexamples.samplecontroller.k8s.io
+  namespace: crd-example
+  labels:
+    name: crd-example
+spec:
+  group: samplecontroller.k8s.io
+  version: v1alpha1
+  names:
+    kind: CRExample
+    plural: crexamples
+  scope: Namespaced
+
+---
+apiVersion: samplecontroller.k8s.io/v1alpha1
+kind: CRExample
+metadata:
+  name: cr-example
+  namespace: crd-example
+  labels:
+    name: crd-example
+spec:
+  deploymentName: cr-example
+  replicas: 1

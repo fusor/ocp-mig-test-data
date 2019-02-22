@@ -1,0 +1,14 @@
+---
+apiVersion: ark.heptio.com/v1
+kind: Backup
+metadata:
+  name: crd-backup
+  namespace: heptio-ark
+spec:
+  labelSelector:
+    matchLabels:
+      name: crd-example
+  storageLocation: default
+  ttl: 720h0m0s
+  includedNamespaces:
+  - '*'
