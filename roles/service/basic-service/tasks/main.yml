@@ -74,17 +74,17 @@
   retries: 20
   delay: 6
 
+- name: Wait 2 minutes for service to appear
+  k8s_facts:
+    api_version: v1
+    kind: Service
+    namespace: service-example
+  register: svc
+  until: svc and (svc.resources | length == 5)
+  retries: 10
+  delay: 10
+
 - name: Remove old restore
   k8s:
     state: absent
     definition: "{{ lookup('file', 'restore-backup-basic-service.yml') }}"
-
-- name: Check if service was created
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'service-template.yml') }}"
-  register: result
-
-- fail:
-    msg: "{{ result }}"
-  when: result.changed == true
