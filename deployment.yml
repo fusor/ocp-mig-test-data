@@ -5,4 +5,4 @@
       private: no
   roles:
   - login_ocp
-  - deployment/hello-pod
+  - deployment/nginx_deployment
