@@ -1,0 +1,16 @@
+---
+apiVersion: ark.heptio.com/v1
+kind: Restore
+metadata:
+  name: route-restore
+  namespace: heptio-ark
+spec:
+  backupName: route-backup
+  excludedResources:
+  - node
+  - events
+  - events.events.k8s.io
+  - backups.ark.heptio.com
+  - restores.ark.heptio.com
+  includedNamespaces:
+  - '*'

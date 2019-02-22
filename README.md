@@ -21,6 +21,7 @@ We need to keep track of supported and unsupported test cases.
   - Pod - ```pod```
   - Image Stream - ```mysql-centos7-is```
   - RBAC - ```basic-sa-with-role```
+  - Route - ```route```
 
 * Tests cases that are expected to fail:
 
