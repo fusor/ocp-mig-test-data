@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: route-example
+  labels:
+    app: route
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: route
+  name: route-service
+  namespace: route-example
+spec:
+  ports:
+  - port: 8081
+    targetPort: 8081
+  type: LoadBalancer
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: route-one
+  namespace: route-example
+  labels:
+    app: route
+    service: route-service
+spec:
+  to:
+    kind: Service
+    name: route-service
+  port:
+    targetPort: 8081
