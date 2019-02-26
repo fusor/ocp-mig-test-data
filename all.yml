@@ -1,0 +1,12 @@
+- hosts: localhost
+  vars:
+    state: present
+  roles:
+  - deployment/hello-pod
+  - rbac/basic_sa_with_role
+  - s2i/cakephp_backup_restore
+  - imagestream/mysql_centos7
+  - pvc/mysql_pvc
+  - basic_app_examples/nginx_backup_restore
+  - route/route_example
+  - service/basic-service
