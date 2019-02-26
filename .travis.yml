@@ -6,6 +6,9 @@ python: "2.7"
 services:
   - docker
 
+env:
+  - TRAVIS=true
+
 before_install:
   - sudo apt-get update -qq
   - sudo sed -i "s/\DOCKER_OPTS=\"/DOCKER_OPTS=\"--insecure-registry=172.30.0.0\/16 /g" /etc/default/docker
