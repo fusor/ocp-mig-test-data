@@ -23,13 +23,9 @@ We need to keep track of supported and unsupported test cases.
   - RBAC - ```basic-sa-with-role```
   - Route - ```route```
   - CRD - ```crd```
+  - Service - ```service```
 
 * Tests cases that are expected to fail:
 
   - S2I - ```cakephp```
   - PVC - ```mysql-pvc```
-  - Service - ```service```
-    - > Steps to reproduce:
-      > 
-      > Execute ```ansible-playbook service.yml -vvv```.
-      > This task will fail becauce Ark in it's current form does not support backup and restore for `LoadBalancer` service type and does not restore `.spec.ports.nodePort` element from the `NodePort` type.
