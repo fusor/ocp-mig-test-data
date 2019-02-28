@@ -1,4 +1,4 @@
-# ocp-mig-test-data
+# ocp-mig-test-data [![Build Status](https://travis-ci.com/fusor/ocp-mig-test-data.svg?branch=master)](https://travis-ci.com/fusor/ocp-mig-test-data)
 Ansible automation to load test-data of various sample applications to aid OCP Migration development efforts.
 
 # Usage
