@@ -1,10 +1,8 @@
 - hosts: localhost
   vars:
+    state: present
     travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
-  vars_prompt:
-  - name: user
-    prompt: "Cluster login"
-    private: no
   roles:
-  - login_ocp
   - route/route_example
+  - rbac/basic_sa_with_role
+  - service/basic-service

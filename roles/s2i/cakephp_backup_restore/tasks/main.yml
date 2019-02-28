@@ -160,7 +160,6 @@
       resource_name="cakephp-example"
     )}}'
 
-
 - name: Delete ark restore of cakephp
   k8s:
     state: absent
