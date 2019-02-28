@@ -13,7 +13,7 @@
         namespace: service-example
         label_selectors: "name=my-service"
       register: deploy
-      until: deploy and deploy.resources | length == 5
+      until: deploy.get("resources", []) and deploy.resources | length == 5
       retries: 12
       delay: 5
 
@@ -24,11 +24,12 @@
         namespace: service-example
         label_selectors: "name=my-service"
       register: deploy
-      until:  deploy and
-              deploy.resources[0].get('status', {}).get('availableReplicas', -1) == deploy.resources[0].spec.get('replicas', -2)
+      until:  deploy.get("resources", [])
+              and deploy.resources[0].get('status', {}).get('availableReplicas', -1) == deploy.resources[0].get("spec", {}).get('replicas', -2)
       retries: 24
       delay: 5
 
+      # Backup part
     - name: Create ark backup
       k8s:
         state: present
@@ -40,7 +41,8 @@
         namespace: heptio-ark
         name: service-basic-backup
       register: backup
-      until: backup and backup.resources[0].get("status", {}).get("phase", 0) == 'Completed'
+      until:  backup.get("resources", [])
+              and backup.resources[0].get("status", {}).get("phase", 0) == 'Completed'
       retries: 20
       delay: 5
 
@@ -61,6 +63,7 @@
       retries: 20
       delay: 6
 
+# Restore part
 - name: Restore service
   when: not travisCI
   block:

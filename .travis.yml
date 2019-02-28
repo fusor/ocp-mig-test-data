@@ -24,7 +24,7 @@ before_script:
   - bash ci/prepare.sh
 
 script:
-  - ansible-playbook all.yml
+  - ansible-playbook all.yml -vvv
 
 notifications:
  email:

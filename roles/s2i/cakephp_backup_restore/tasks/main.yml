@@ -5,17 +5,15 @@
     definition: "{{ lookup('file', 'cakephp-template.yml')}}"
 
 - name: Wait for cakephp deployment
-  debug:
-    var: pod
-  until: pod and pod.status.phase == "Running"
+  k8s_facts:
+    kind: Pod
+    namespace: cakephp-example
+    label_selectors: "app=cakephp-example"
+  register: pod
+  until:  pod.get("resources", []) | length > 0
+          and pod.resources[0].get("status", {}).get("phase", "") == "Running"
   retries: 20
   delay: 10
-  vars:
-    pod: '{{ lookup("k8s",
-      kind="Pod",
-      namespace="cakephp-example",
-      label_selector="deployment=cakephp-example-1"
-    )}}'
 
 # Create a backup
 - name: Create ark backup of cakephp
@@ -24,18 +22,16 @@
     definition: "{{ lookup('file', 'create-backup-cakephp.yml')}}"
 
 - name: Wait for backup to complete
-  debug:
-    var: backup
-  until: backup and backup.status.get("phase", 0) == "Completed"
+  k8s_facts:
+    kind: Backup
+    api_version: ark.heptio.com/v1
+    namespace: heptio-ark
+    name: cakephp-backup
+  register: backup
+  until:  backup.get("resources", []) | length > 0
+          and backup.resources[0].get("status", {}).get("phase", "") == "Completed"
   retries: 10
   delay: 5
-  vars:
-    backup: '{{ lookup("k8s",
-      kind="Backup",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="cakephp-backup"
-    )}}'
 
 # Simulate DR and restore
 - name: Delete cakephp app
@@ -48,119 +44,102 @@
         name: cakephp-example
 
 - name: Wait 2 minutes for namespace to be deleted
-  debug:
-    var: ns
-  until:  not ns
+  k8s_facts:
+    kind: Namespace
+    api_version: v1
+    name: cakephp-example
+  register: ns
+  until: ns.get("resources", [""]) | length == 0
   retries: 10
   delay: 5
-  vars:
-    ns: '{{ lookup("k8s",
-      kind="Namespace",
-      api_version="v1",
-      resource_name="cakephp-example"
-    )}}'
 
-- name: Create ark restore of cakephp
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
+# Restore part
+- name: Restore service
+  when: not travisCI
+  block:
+    - name: Create ark restore of cakephp
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
 
-- name: Wait for restore to finish
-  debug:
-    var: restore
-  until: restore and restore.status.get("phase", 0) == "Completed"
-  retries: 20
-  delay: 10
-  ignore_errors: yes
-  vars:
-    restore: '{{ lookup("k8s",
-      kind="Restore",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="cakephp-restore"
-    )}}'
+    - name: Wait for restore to finish
+      k8s_facts:
+        kind: Restore
+        api_version: ark.heptio.com/v1
+        namespace: heptio-ark
+        name: cakephp-restore
+      register: restore
+      until:  restore.get("resources", []) | length > 0
+              and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
+      retries: 20
+      delay: 10
+      ignore_errors: yes
 
-# Check every restored resource
-- name: Wait for cakephp deployment
-  debug:
-    var: pod
-  until: pod and pod.status.phase == "Running"
-  retries: 20
-  delay: 30
-  ignore_errors: yes
-  vars:
-    pod: '{{ lookup("k8s",
-      kind="Pod",
-      namespace="cakephp-example",
-      label_selector="deployment=cakephp-example-1"
-    )}}'
+    # Check every restored resource
+    - name: Wait for cakephp deployment
+      k8s_facts:
+        kind: Pod
+        namespace: cakephp-example
+        label_selectors: "app=cakephp-example"
+      register: pod
+      until:  pod.get("resources", []) | length > 0
+              and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+      retries: 20
+      delay: 30
+      ignore_errors: yes
 
-- name: Check for restored secrets
-  debug:
-    var: secrets
-  until: secrets
-  retries: 20
-  delay: 30
-  vars:
-    secrets: '{{ lookup("k8s",
-      kind="Secret",
-      namespace="cakephp-example",
-      resource_name="cakephp-example"
-    )}}'
+    - name: Check for restored secrets
+      k8s_facts:
+        kind: Secret
+        namespace: cakephp-example
+        name: cakephp-example
+      register: secrets
+      until:  secrets.get("resources", []) | length > 0
+      retries: 20
+      delay: 30
 
-- name: Check for restored service
-  debug:
-    var: service
-  until: service
-  retries: 20
-  delay: 30
-  vars:
-    service: '{{ lookup("k8s",
-      kind="Service",
-      namespace="cakephp-example",
-      resource_name="cakephp-example"
-    )}}'
+    - name: Check for restored service
+      k8s_facts:
+        kind: Service
+        namespace: cakephp-example
+        name: cakephp-example
+      register: service
+      until:  service.get("resources", []) | length > 0
+              and service.resources[0].get("status", {}).get("phase", "") == ""
+      retries: 20
+      delay: 30
 
-- name: Check for restored route
-  debug:
-    var: route
-  until: route
-  retries: 20
-  delay: 30
-  vars:
-    route: '{{ lookup("k8s",
-      kind="Route",
-      namespace="cakephp-example",
-      resource_name="cakephp-example"
-    )}}'
+    - name: Check for restored route
+      k8s_facts:
+        kind: Route
+        namespace: cakephp-example
+        name: cakephp-example
+      register: route
+      until: route.get("resources", []) | length > 0
+      retries: 20
+      delay: 30
 
-- name: Check for restored build config
-  debug:
-    var: bc
-  until: bc
-  retries: 20
-  delay: 30
-  vars:
-    bc: '{{ lookup("k8s",
-      kind="BuildConfig",
-      namespace="cakephp-example",
-      resource_name="cakephp-example"
-    )}}'
+    - name: Check for restored build config
+      k8s_facts:
+        kind: BuildConfig
+        namespace: cakephp-example
+        name: cakephp-example
+      register: bc
+      until: bc.get("resources", []) | length > 0
+      retries: 20
+      delay: 30
 
-- name: Check for restored deployment config
-  debug:
-    var: dc
-  until: dc
-  retries: 20
-  delay: 30
-  vars:
-    dc: '{{ lookup("k8s",
-      kind="DeploymentConfig",
-      namespace="cakephp-example",
-      resource_name="cakephp-example"
-    )}}'
+    - name: Check for restored deployment config
+      k8s_facts:
+        kind: DeploymentConfig
+        namespace: cakephp-example
+        name: cakephp-example
+      register: dc
+      until: dc.get("resouces", []) | length > 0
+      retries: 20
+      delay: 30
 
-- name: Delete ark restore of cakephp
-  k8s:
-    state: absent
-    definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
+    - name: Delete ark restore of cakephp
+      k8s:
+        state: absent
+        definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
