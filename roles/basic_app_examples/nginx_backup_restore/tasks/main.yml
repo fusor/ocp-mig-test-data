@@ -6,37 +6,34 @@
     definition: "{{ lookup('file', 'base.yml')}}"
 
 - name: Wait 2 minutes for nginx deployment
-  debug:
-    var: deploy
-  until: deploy and deploy.status.replicas == deploy.status.get("availableReplicas", 0)
+  k8s_facts:
+    kind: Deployment
+    api_version: apps/v1
+    namespace: nginx-example
+    label_selectors: "app=nginx"
+  register: deploy
+  until:  deploy.get("resources", [])
+          and deploy.resources[0].get("spec", {}).get("replicas", -1) == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
   retries: 10
   delay: 10
-  vars:
-    deploy: '{{ lookup("k8s",
-      kind="Deployment",
-      api_version="apps/v1",
-      namespace="nginx-example",
-      label_selector="app=nginx"
-    )}}'
 
+# Backup part
 - name: Create ark backup of nginx
   k8s:
     state : "{{ state }}"
     definition: "{{ lookup('file', 'create-backup-nginx.yml')}}"
 
 - name: Wait for backup to complete
-  debug:
-    var: backup
-  until: backup and backup.status.get("phase", 0) == "Completed"
+  k8s_facts:
+    kind: Backup
+    api_version: ark.heptio.com/v1
+    namespace: heptio-ark
+    name: "nginx-backup"
+  register: backup
+  until:  backup.get("resources", [])
+          and backup.resources[0].status.get("phase", 0) == "Completed"
   retries: 10
   delay: 5
-  vars:
-    backup: '{{ lookup("k8s",
-      kind="Backup",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="nginx-backup"
-    )}}'
 
 - name: Delete nginx namespace to simulate DR
   k8s:
@@ -50,52 +47,50 @@
           app: nginx
 
 - name: Wait 2 minutes for namespace to be deleted
-  debug:
-    var: ns
-  until:  not ns
+  k8s_facts:
+    kind: Namespace
+    api_version: v1
+    name: nginx-example
+  register: ns
+  until:  not ns.resources
   retries: 10
   delay: 5
-  vars:
-    ns: '{{ lookup("k8s",
-      kind="Namespace",
-      api_version="v1",
-      resource_name="nginx-example"
-    )}}'
 
-- name: Create ark restore of nginx
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'create-restore-nginx.yml')}}"
+# Restore part
+- name: Restore service
+  when: not travisCI
+  block:
+    - name: Create ark restore of nginx
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'create-restore-nginx.yml')}}"
 
-- name: Wait for restore to finish
-  debug:
-    var: restore
-  until: restore and restore.status.get("phase", 0) == "Completed"
-  retries: 20
-  delay: 10
-  vars:
-    restore: '{{ lookup("k8s",
-      kind="Restore",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="nginx-backup"
-    )}}'
+    - name: Wait for restore to finish
+      k8s_facts:
+        kind: Restore
+        api_version: ark.heptio.com/v1
+        namespace: heptio-ark
+        name: nginx-backup
+      register: restore
+      until:  restore.get("resources", [])
+              and restore.resources[0].get("status", {}).get("phase", 0) == "Completed"
+      retries: 20
+      delay: 10
 
-- name: Wait for nginx deployment
-  debug:
-    var: deploy
-  until: deploy and deploy.status.replicas == deploy.status.get("availableReplicas", 0)
-  retries: 10
-  delay: 10
-  vars:
-    deploy: '{{ lookup("k8s",
-      kind="Deployment",
-      api_version="apps/v1",
-      namespace="nginx-example",
-      label_selector="app=nginx"
-    )}}'
+    - name: Wait for nginx deployment
+      k8s_facts:
+        kind: Deployment
+        api_version: apps/v1
+        namespace: nginx-example
+        label_selectors: app=nginx
+      register: deploy
+      until:  deploy.get("resources", [])
+              and deploy.resources[0].get("spec", {}).replicas == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
+      retries: 10
+      delay: 10
+      vars:
 
-- name: Delete ark restore of nginx (workaround to use common name for restore)
-  k8s:
-    state: absent
-    definition: "{{ lookup('file', 'create-restore-nginx.yml')}}"
+    - name: Delete ark restore of nginx (workaround to use common name for restore)
+      k8s:
+        state: absent
+        definition: "{{ lookup('file', 'create-restore-nginx.yml')}}"

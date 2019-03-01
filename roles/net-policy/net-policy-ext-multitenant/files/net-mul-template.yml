@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-mul-1
+  labels:
+    test: net-policy
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-mul-2
+  labels:
+    test: net-policy
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-mul-ext
+  labels:
+    test: net-policy
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: net-mul-2
+  name: httpd-ex
+  labels:
+    app: httpd-ex
+    test: net-policy
+spec:
+  containers:
+    - name: hello-openshift
+      image: centos/httpd-24-centos7

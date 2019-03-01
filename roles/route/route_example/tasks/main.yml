@@ -17,6 +17,7 @@
       retries: 10
       delay: 3
 
+    # Backup part
     - name: Create ark backup
       k8s:
         state : present
@@ -56,6 +57,7 @@
       retries: 10
       delay: 5
 
+# Restore part
 - name: Restore route
   when: not travisCI
   block:

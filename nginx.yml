@@ -1,5 +1,6 @@
 - hosts: localhost
   vars:
+    travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
     state: present
   vars_prompt:
     - name: user
@@ -8,3 +9,4 @@
   roles:
   - login_ocp
   - basic_app_examples/nginx_backup_restore
+  

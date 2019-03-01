@@ -1,0 +1,48 @@
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-same-namespace
+  namespace: net-pr-2
+  labels:
+    test: net-policy
+spec:
+  podSelector:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          group: net-group
+          
+# TODO: needed testing
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-all-to-httpd-ex
+  namespace: net-pr-1
+  labels:
+    test: net-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: httpd-ex
+  ingress:
+  - {}
+  
+# TODO: needed testing
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: foo-deny-external-egress
+  namespace: net-ext
+  labels:
+    test: net-policy
+spec:
+  podSelector:
+    matchLabels:
+      outbound: deny
+  policyTypes:
+  - Egress
+  egress: []

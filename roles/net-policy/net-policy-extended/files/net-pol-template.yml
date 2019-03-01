@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-pr-1
+  labels:
+    test: net-policy
+    group: net-group
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-pr-2
+  labels:
+    test: net-policy
+    group: net-group
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-ext
+  labels:
+    test: net-policy
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: net-pr-2
+  name: httpd-ex
+  labels:
+    app: httpd-ex
+    test: net-policy
+spec:
+  containers:
+    - name: hello-openshift
+      image: centos/httpd-24-centos7

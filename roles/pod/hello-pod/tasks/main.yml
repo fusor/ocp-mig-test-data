@@ -4,18 +4,54 @@
     state: present
     definition: "{{ lookup('file', 'hellopod-template.yml')}}"
 
+- name: Create pod separatly 
+  k8s:
+    state: present
+    definition:
+      kind: Pod
+      apiVersion: v1
+      metadata:
+        name: hello-openshift
+        namespace: hello-pod
+        creationTimestamp: 
+        labels:
+          name: hello-openshift
+      spec:
+        containers:
+        - name: hello-openshift
+          image: openshift/hello-openshift
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          volumeMounts:
+          - name: tmp
+            mountPath: "/tmp"
+          terminationMessagePath: "/dev/termination-log"
+          imagePullPolicy: IfNotPresent
+          capabilities: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+        volumes:
+        - name: tmp
+          emptyDir: {}
+        restartPolicy: Always
+        dnsPolicy: ClusterFirst
+        serviceAccount: ''
+      status: {}
+
 - name: Wait for pod to run
-  debug:
-    var: pod
-  until: pod and pod.status.phase == "Running"
+  k8s_facts:
+    kind: Pod
+    namespace: hello-pod
+    label_selectors: "name=hello-openshift"
+  register: pod
+  until:  pod.get("resources", [])
+          and pod.resources[0].get("status", {}).get("phase", "")
+          == "Running"
   retries: 20
   delay: 10
-  vars:
-    pod: '{{ lookup("k8s",
-      kind="Pod",
-      namespace="hello-pod",
-      label_selector="name=hello-openshift"
-    )}}'
 
 # Create a backup
 - name: Create ark backup of hello pod
@@ -24,18 +60,17 @@
     definition: "{{ lookup('file', 'create-backup-hellopod.yml')}}"
 
 - name: Wait for backup to complete
-  debug:
-    var: backup
-  until: backup and backup.status.get("phase", 0) == "Completed"
+  k8s_facts:
+    kind: Backup
+    api_version: ark.heptio.com/v1
+    namespace: heptio-ark
+    name: hellopod-backup
+  register: backup
+  until:  backup.get("resources", []) | length > 0
+          and backup.resources[0].get("status", {}).get("phase", "Completed")
+          == "Completed"
   retries: 10
   delay: 5
-  vars:
-    backup: '{{ lookup("k8s",
-      kind="Backup",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="hellopod-backup"
-    )}}'
 
 # Simulate DR and restore
 - name: Delete hello pod
@@ -48,51 +83,47 @@
         name: hello-pod
 
 - name: Wait 2 minutes for namespace to be deleted
-  debug:
-    var: ns
-  until:  not ns
+  k8s_facts:
+    kind: Namespace
+    api_version: v1
+    name: hello-pod
+  register: ns
+  until: not ns.get("resources", [""])
   retries: 10
   delay: 5
-  vars:
-    ns: '{{ lookup("k8s",
-      kind="Namespace",
-      api_version="v1",
-      resource_name="hello-pod"
-    )}}'
 
-- name: Create ark restore of hello pod
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'create-restore-hellopod.yml')}}"
+# Restore part
+- name: Restore service
+  when: not travisCI
+  block:
+    - name: Create ark restore of hello pod
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'create-restore-hellopod.yml')}}"
 
-- name: Wait for restore to finish
-  debug:
-    var: restore
-  until: restore and restore.status.get("phase", 0) == "Completed"
-  retries: 20
-  delay: 10
-  vars:
-    restore: '{{ lookup("k8s",
-      kind="Restore",
-      api_version="ark.heptio.com/v1",
-      namespace="heptio-ark",
-      resource_name="hellopod-restore"
-    )}}'
+    - name: Wait for restore to finish
+      k8s_facts:
+        kind: Restore
+        api_version: ark.heptio.com/v1
+        namespace: heptio-ark
+        name: hellopod-restore
+      register: restore
+      until: restore.get("resources", []) and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
+      retries: 20
+      delay: 10
+      
+    - name: Wait for pod to run
+      k8s_facts:
+        kind: Pod
+        namespace: hello-pod
+        label_selectors: "name=hello-openshift"
+      register: pod
+      until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+      retries: 20
+      delay: 10
+      vars:
 
-- name: Wait for pod to run
-  debug:
-    var: pod
-  until: pod and pod.status.phase == "Running"
-  retries: 20
-  delay: 10
-  vars:
-    pod: '{{ lookup("k8s",
-      kind="Pod",
-      namespace="hello-pod",
-      label_selector="name=hello-openshift"
-    )}}'
-
-- name: Delete ark restore of hello pod (workaround to use common name for restore)
-  k8s:
-    state: absent
-    definition: "{{ lookup('file', 'create-restore-hellopod.yml')}}"
+    - name: Delete ark restore of hello pod (workaround to use common name for restore)
+      k8s:
+        state: absent
+        definition: "{{ lookup('file', 'create-restore-hellopod.yml')}}"
