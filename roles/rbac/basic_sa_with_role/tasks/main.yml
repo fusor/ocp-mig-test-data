@@ -45,6 +45,7 @@
       retries: 10
       delay: 5
 
+# Restore part
 - name: Restore service account
   when: not travisCI
   block:

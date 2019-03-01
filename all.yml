@@ -3,6 +3,14 @@
     state: present
     travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
   roles:
-  - route/route_example
-  - rbac/basic_sa_with_role
-  - service/basic-service
+    - rbac/basic_sa_with_role
+    - pvc/mysql_pvc
+    - deployment/nginx_deployment
+    - route/route_example
+    - s2i/cakephp_backup_restore
+    - service/basic-service
+    - basic_app_examples/nginx_backup_restore
+    - imagestream/mysql_centos7
+    - crd/simple_crd
+    - pod/hello-pod
+
