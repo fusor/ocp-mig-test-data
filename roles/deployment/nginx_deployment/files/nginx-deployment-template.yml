@@ -12,6 +12,8 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   namespace: nginx-deployment
+  labels:
+    app: nginx-deployment
 spec:
   replicas: 2
   template:
