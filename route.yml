@@ -1,6 +1,7 @@
 - hosts: localhost
   vars:
-    travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
+    with_backup: true
+    with_restore: true
   vars_prompt:
   - name: user
     prompt: "Cluster login"

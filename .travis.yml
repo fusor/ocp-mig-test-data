@@ -6,9 +6,6 @@ python: "2.7"
 services:
   - docker
 
-env:
-  - TRAVIS=true
-
 before_install:
   - sudo apt-get update -qq
   - sudo sed -i "s/\DOCKER_OPTS=\"/DOCKER_OPTS=\"--insecure-registry=172.30.0.0\/16 /g" /etc/default/docker
@@ -24,7 +21,7 @@ before_script:
   - bash ci/prepare.sh
 
 script:
-  - ansible-playbook all.yml -vvv
+  - ansible-playbook all.yml -e with_backup=true
 
 notifications:
  email:

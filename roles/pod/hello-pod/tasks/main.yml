@@ -42,6 +42,7 @@
       delay: 10
 
 - name: Create a backup
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -51,7 +52,7 @@
         backup_label: hello-openshift
 
 - name: Restore pod
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:

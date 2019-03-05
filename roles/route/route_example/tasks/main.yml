@@ -18,6 +18,7 @@
       delay: 3
 
 - name: Create route and backup
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -26,9 +27,8 @@
         backup_name: route-backup
         backup_label: route
 
-# Restore part
 - name: Restore route
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:
