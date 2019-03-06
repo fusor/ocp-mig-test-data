@@ -35,7 +35,8 @@
       vars:
         restore_name: cakephp-restore
         backup_name: cakephp-backup
-        namespace_to_delete: cakephp-example
+        namespaces_to_delete:
+          - cakephp-example
 
     # Check every restored resource
     - name: Wait for cakephp deployment

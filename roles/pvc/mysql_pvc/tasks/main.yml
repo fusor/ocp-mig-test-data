@@ -44,7 +44,8 @@
       vars:
         restore_name: mysql-persistent-restore
         backup_name: mysql-persistent-backup
-        namespace_to_delete: mysql-persistent
+        namespaces_to_delete:
+          - mysql-persistent
 
     - name: Wait for mysql with pvc deployment
       k8s_facts:

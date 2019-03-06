@@ -36,7 +36,8 @@
       vars:
         restore_name: route-restore
         backup_name: route-backup
-        namespace_to_delete: route-example
+        namespaces_to_delete:
+          - route-example
 
     - name: Checking the route after restore
       k8s_facts:

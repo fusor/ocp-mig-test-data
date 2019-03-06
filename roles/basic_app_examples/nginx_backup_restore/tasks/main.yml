@@ -36,7 +36,8 @@
       vars:
         restore_name: nginx-restore
         backup_name: nginx-backup
-        namespace_to_delete: nginx-example
+        namespaces_to_delete:
+          - nginx-example
 
     - name: Wait for nginx deployment
       k8s_facts:

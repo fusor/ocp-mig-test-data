@@ -60,7 +60,8 @@
       vars:
         restore_name: hellopod-restore
         backup_name: hellopod-backup
-        namespace_to_delete: hello-pod
+        namespaces_to_delete:
+          - hello-pod
 
     - name: Wait for pod to run
       k8s_facts:

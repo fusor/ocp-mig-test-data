@@ -5,17 +5,19 @@
       apiVersion: v1
       kind: Namespace
       metadata:
-        name: "{{ namespace_to_delete }}"
+        name: "{{ item }}"
+  loop: "{{ namespaces_to_delete }}"
 
 - name: Wait 2 minutes for namespace to be deleted
   k8s_facts:
     kind: Namespace
     api_version: v1
-    name: "{{ namespace_to_delete }}"
+    name: "{{ item }}"
   register: ns
   until: not ns.get("resources", [""])
   retries: 20
   delay: 30
+  loop: "{{ namespaces_to_delete }}"
 
 - name: Create ark restore of resource
   k8s:
