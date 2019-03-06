@@ -17,6 +17,7 @@
       delay: 30
 
 - name: Create a backup of cakephp
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -26,7 +27,7 @@
         backup_label: hello-openshift
 
 - name: Restore service
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:

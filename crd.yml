@@ -1,4 +1,7 @@
 - hosts: localhost
+  vars:
+    with_backup: true
+    with_restore: true
   vars_prompt:
     - name: user
       prompt: "Cluster login"

@@ -32,6 +32,7 @@
             replicas: 1
 
 - name: Create backup
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -41,7 +42,7 @@
         backup_label: crd-example
 
 - name: Restore service
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:

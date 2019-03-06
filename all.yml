@@ -1,7 +1,8 @@
 - hosts: localhost
   vars:
     state: present
-    travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
+    with_backup: false
+    with_restore: false
   roles:
     - rbac/basic_sa_with_role
     - pvc/mysql_pvc

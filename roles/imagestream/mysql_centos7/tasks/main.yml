@@ -16,6 +16,7 @@
       delay: 10
 
 - name: Create backup
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -25,7 +26,7 @@
         backup_label: mysql
 
 - name: Restore resource
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:

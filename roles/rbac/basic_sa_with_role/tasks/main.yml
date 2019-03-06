@@ -6,6 +6,7 @@
         definition: "{{ lookup('file', 'basic-sa-role-template.yml')}}"
 
 - name: Create backup
+  when: with_backup
   block:
     - name: Create backup
       include_role:
@@ -15,7 +16,7 @@
         backup_label: basic-sa-role
 
 - name: Restore service account
-  when: not travisCI
+  when: with_restore
   block:
     - name: Start restoring 
       include_role:
