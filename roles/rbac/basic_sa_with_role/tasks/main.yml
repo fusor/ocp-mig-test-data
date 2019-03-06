@@ -1,4 +1,4 @@
-- name: Create service account and backup
+- name: Create service account
   block:
     - name: Create service account, role and role binding
       k8s:
