@@ -22,9 +22,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: cakephp-backup
-        backup_label: hello-openshift
 
 - name: Restore service
   when: with_restore
@@ -32,11 +29,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: cakephp-restore
-        backup_name: cakephp-backup
-        namespaces_to_delete:
-          - cakephp-example
 
     # Check every restored resource
     - name: Wait for cakephp deployment

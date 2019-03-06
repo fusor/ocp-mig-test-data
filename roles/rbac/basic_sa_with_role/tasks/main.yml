@@ -11,9 +11,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: sa-role-backup
-        backup_label: basic-sa-role
 
 - name: Restore service account
   when: with_restore
@@ -21,11 +18,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: sa-role-restore
-        backup_name: sa-role-backup
-        namespaces_to_delete:
-          - basic-sa-role
 
     - name: Wait 2 minutes for service account to appear
       k8s_facts:

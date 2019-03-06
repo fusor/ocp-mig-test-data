@@ -1,0 +1,5 @@
+backup_name: crd-backup
+backup_label: crd-example
+restore_name: crd-restore
+namespaces_to_delete:
+  - crd-example

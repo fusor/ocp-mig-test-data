@@ -35,9 +35,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: service-basic-backup
-        backup_label: hello-openshift
 
 - name: Restore service
   when: with_restore
@@ -45,11 +42,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: service-basic-restore
-        backup_name: service-basic-backup
-        namespaces_to_delete:
-          - service-example
 
     - name: Wait 2 minutes for service to appear
       k8s_facts:

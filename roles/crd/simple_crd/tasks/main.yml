@@ -37,9 +37,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: crd-backup
-        backup_label: crd-example
 
 - name: Restore service
   when: with_restore
@@ -47,11 +44,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: crd-restore
-        backup_name: crd-backup
-        namespaces_to_delete:
-          - crd-example
 
     - name: Wait 2 minutes for CRD to appear
       k8s_facts:

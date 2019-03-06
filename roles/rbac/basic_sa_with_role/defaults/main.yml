@@ -1,0 +1,5 @@
+backup_name: sa-role-backup
+backup_label: basic-sa-role
+restore_name: sa-role-restore
+namespaces_to_delete:
+  - basic-sa-role

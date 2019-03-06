@@ -23,9 +23,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: nginx-deployment-backup
-        backup_label: nginx-deployment
 
 - name: Restore service
   when: with_restore
@@ -33,11 +30,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: nginx-deployment-restore
-        backup_name: nginx-deployment-backup
-        namespaces_to_delete:
-          - nginx-deployment
 
     - name: Check for deployment presence
       k8s_facts:

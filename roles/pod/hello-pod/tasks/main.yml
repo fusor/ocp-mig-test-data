@@ -47,9 +47,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: hellopod-backup
-        backup_label: hello-openshift
 
 - name: Restore pod
   when: with_restore
@@ -57,11 +54,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: hellopod-restore
-        backup_name: hellopod-backup
-        namespaces_to_delete:
-          - hello-pod
 
     - name: Wait for pod to run
       k8s_facts:

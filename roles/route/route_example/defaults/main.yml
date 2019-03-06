@@ -1,0 +1,5 @@
+backup_name: route-backup
+backup_label: route
+restore_name: route-restore
+namespaces_to_delete:
+  - route-example
