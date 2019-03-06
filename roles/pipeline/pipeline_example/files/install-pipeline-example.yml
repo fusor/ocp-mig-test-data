@@ -1,0 +1,295 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pipeline-example
+  labels:
+    app: pipeline
+
+---
+apiVersion: v1
+kind: BuildConfig
+metadata:
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "nodejs-mongodb-example", "namespace": "", "kind": "DeploymentConfig"}]'
+    labels:
+      app: pipeline
+    name: sample-pipeline
+    namespace: pipeline-example
+spec:
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |-
+          try {
+             timeout(time: 20, unit: 'MINUTES') {
+                node('nodejs') {
+                    stage('build') {
+                      openshift.withCluster() {
+                         openshift.withProject() {
+                            def bld = openshift.startBuild('nodejs-mongodb-example')
+                            bld.untilEach {
+                              return it.object().status.phase == "Running"
+                            }
+                            bld.logs('-f')
+                         }
+                      }
+                    }
+                    stage('deploy') {
+                      openshift.withCluster() {
+                        openshift.withProject() {
+                          def dc = openshift.selector('dc', 'nodejs-mongodb-example')
+                          dc.rollout().latest()
+                        }
+                      }
+                    }
+                  }
+             }
+          } catch (err) {
+             echo "in catch block"
+             echo "Caught: ${err}"
+             currentBuild.result = 'FAILURE'
+             throw err
+          }
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: secret101
+      type: GitHub
+    - generic:
+        secret: secret101
+      type: Generic
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+   annotations:
+      service.alpha.openshift.io/dependencies: '[{"name": "mongodb", "namespace": "", "kind": "Service"}]'
+   name: nodejs-mongodb-example
+   namespace: pipeline-example
+   labels:
+     app: pipeline
+spec:
+    ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: nodejs-mongodb-example
+
+---
+apiVersion: v1
+kind: Route
+metadata:
+    name: nodejs-mongodb-example
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+spec:
+    to:
+      kind: Service
+      name: nodejs-mongodb-example
+
+---
+apiVersion: v1
+kind: ImageStream
+metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: nodejs-mongodb-example
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+
+---
+apiVersion: v1
+kind: BuildConfig
+metadata:
+    annotations:
+      description: Defines how to build the application
+    name: nodejs-mongodb-example
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: nodejs-mongodb-example:latest
+    postCommit:
+      script: npm test
+    source:
+      git:
+        uri: https://github.com/openshift/nodejs-ex.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+        from:
+          kind: ImageStreamTag
+          name: nodejs:4
+          namespace: openshift
+      type: Source
+    triggers:
+    - github:
+        secret: GITHUB_WEBHOOK_SECRET
+      type: GitHub
+    - generic:
+        secret: GENERIC_WEBHOOK_SECRET
+      type: Generic
+
+---
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+    annotations:
+      description: Defines how to deploy the application server
+    name: nodejs-mongodb-example
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+spec:
+    replicas: 1
+    selector:
+      name: nodejs-mongodb-example
+    strategy:
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          name: nodejs-mongodb-example
+        name: nodejs-mongodb-example
+      spec:
+        containers:
+        - env:
+          - name: DATABASE_SERVICE_NAME
+            value: mongodb
+          - name: MONGODB_USER
+            value: DATABASE_USER
+          - name: MONGODB_PASSWORD
+            value: DATABASE_PASSWORD
+          - name: MONGODB_DATABASE
+            value: sampledb
+          - name: MONGODB_ADMIN_PASSWORD
+            value: DATABASE_ADMIN_PASSWORD
+          image: ' '
+          livenessProbe:
+            httpGet:
+              path: /pagecount
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+          name: nodejs-mongodb-example
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /pagecount
+              port: 8080
+            initialDelaySeconds: 3
+            timeoutSeconds: 3
+          resources:
+            limits:
+              memory: 512Mi
+    triggers:
+    - imageChangeParams:
+        automatic: false
+        containerNames:
+        - nodejs-mongodb-example
+        from:
+          kind: ImageStreamTag
+          name: nodejs-mongodb-example:latest
+      type: ImageChange
+    - type: ConfigChange
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    annotations:
+      description: Exposes the database server
+    name: mongodb
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+spec:
+    ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+    selector:
+      name: mongodb
+
+---
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+    annotations:
+      description: Defines how to deploy the database
+    name: mongodb
+    namespace: pipeline-example
+    labels:
+      app: pipeline
+spec:
+    replicas: 1
+    selector:
+      name: mongodb
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: mongodb
+        name: mongodb
+      spec:
+        containers:
+        - env:
+          - name: MONGODB_USER
+            value: DATABASE_USER
+          - name: MONGODB_PASSWORD
+            value: DATABASE_PASSWORD
+          - name: MONGODB_DATABASE
+            value: sampledb
+          - name: MONGODB_ADMIN_PASSWORD
+            value: DATABASE_ADMIN_PASSWORD
+          image: ' '
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          name: mongodb
+          ports:
+          - containerPort: 27017
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+            initialDelaySeconds: 3
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: mongodb-data
+        volumes:
+        - emptyDir:
+            medium: ""
+          name: mongodb-data
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - mongodb
+        from:
+          kind: ImageStreamTag
+          name: mongodb:3.2
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange

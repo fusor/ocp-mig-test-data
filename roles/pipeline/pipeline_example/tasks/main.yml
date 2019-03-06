@@ -1,0 +1,47 @@
+---
+- name: Create Pipeline
+  block:
+    - name: Create Jenkins-pipeline BuildConfig
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'install-pipeline-example.yml')}}"
+
+    - name: Checking the build is created and started
+      k8s_facts:
+        api_version: v1
+        kind: BuildConfig
+        namespace: pipeline-example
+        label_selectors:
+          - app = pipeline
+      register: buildconfig
+      until: buildconfig
+             and (buildconfig.resources | length > 0)
+      retries: 10
+      delay: 5
+
+- name: Create a backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore pipeline
+  when: with_restore
+  block:
+    - name: Start restoring
+      include_role:
+        name: restore
+
+- name: Checking the build is restored
+  k8s_facts:
+    api_version: v1
+    kind: BuildConfig
+    namespace: pipeline-example
+    label_selectors:
+      - app = pipeline
+  register: buildconfig
+  until: buildconfig
+         and (buildconfig.resources | length > 0)
+  retries: 10
+  delay: 5
