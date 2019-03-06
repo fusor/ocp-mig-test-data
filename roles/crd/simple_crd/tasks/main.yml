@@ -50,7 +50,8 @@
       vars:
         restore_name: crd-restore
         backup_name: crd-backup
-        namespace_to_delete: crd-example
+        namespaces_to_delete:
+          - crd-example
 
     - name: Wait 2 minutes for CRD to appear
       k8s_facts:

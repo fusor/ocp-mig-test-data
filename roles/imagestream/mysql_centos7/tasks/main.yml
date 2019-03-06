@@ -34,7 +34,8 @@
       vars:
         restore_name: mysql-centos7-imagestream-restore
         backup_name: mysql-centos7-imagestream-backup
-        namespace_to_delete: mysql-centos7-imagestream
+        namespaces_to_delete: 
+          - mysql-centos7-imagestream
 
     - name: Wait for image stream to appear
       k8s_facts:

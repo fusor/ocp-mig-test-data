@@ -24,7 +24,8 @@
       vars:
         restore_name: sa-role-restore
         backup_name: sa-role-backup
-        namespace_to_delete: basic-sa-role
+        namespaces_to_delete:
+          - basic-sa-role
 
     - name: Wait 2 minutes for service account to appear
       k8s_facts:

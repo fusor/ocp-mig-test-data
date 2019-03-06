@@ -48,7 +48,8 @@
       vars:
         restore_name: service-basic-restore
         backup_name: service-basic-backup
-        namespace_to_delete: service-example
+        namespaces_to_delete:
+          - service-example
 
     - name: Wait 2 minutes for service to appear
       k8s_facts:
