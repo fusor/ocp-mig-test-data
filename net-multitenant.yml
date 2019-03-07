@@ -1,3 +1,4 @@
+# This role assumes that you use the multitenant plugin for networking
 - hosts: localhost
   vars:
     state: present
@@ -6,5 +7,4 @@
     prompt_login: "{{ lookup('ENV', 'PROMPT_LOGIN') }}"
   roles:
   - login_ocp
-  - net-policy/net-policy-extended
   - net-policy/net-policy-ext-multitenant

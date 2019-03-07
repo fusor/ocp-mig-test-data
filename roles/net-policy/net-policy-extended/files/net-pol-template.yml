@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: net-pr-1
   labels:
-    test: net-policy
+    app: net-policy
     group: net-group
 
 ---
@@ -13,7 +13,7 @@ kind: Namespace
 metadata:
   name: net-pr-2
   labels:
-    test: net-policy
+    app: net-policy
     group: net-group
 
 ---
@@ -22,7 +22,7 @@ kind: Namespace
 metadata:
   name: net-ext
   labels:
-    test: net-policy
+    app: net-policy
 
 ---
 apiVersion: v1
@@ -31,8 +31,7 @@ metadata:
   namespace: net-pr-2
   name: httpd-ex
   labels:
-    app: httpd-ex
-    test: net-policy
+    app: net-policy
 spec:
   containers:
     - name: hello-openshift

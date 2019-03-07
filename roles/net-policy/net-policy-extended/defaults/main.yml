@@ -1,0 +1,7 @@
+backup_name: net-pol-backup
+backup_label: net-policy
+restore_name: net-pol-restore
+namespaces_to_delete:
+  - net-pr-1
+  - net-pr-2
+  - net-ext

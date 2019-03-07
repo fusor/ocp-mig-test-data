@@ -1,4 +1,3 @@
-# Setup
 - name: Create resources
   k8s:
     state: present
@@ -9,7 +8,7 @@
     api_version: v1
     kind: Pod
     namespace: net-pr-2
-    label_selectors: "app=httpd-ex"
+    name: httpd-ex
   register: pod
   until:  pod.get("resources", [])
           and pod.resources[0].get("status", {}).get("phase", "") ==
@@ -22,182 +21,125 @@
     state: present
     definition: "{{ lookup('file', 'net-pol-nets-template.yml') }}"
 
-# Create a backup
-- name: Create ark backup
-  k8s:
-    state : present
-    definition: "{{ lookup('file', 'create-backup-net-pol.yml')}}"
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
 
-- name: Wait for backup to complete
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+- name: Wait for pod running on second namespace
   k8s_facts:
-    kind: Backup
-    api_version: ark.heptio.com/v1
-    namespace: heptio-ark
-    name: net-pol-backup
-  register: backup
-  until:  backup.get("resources", []) | length > 0
-          and backup.resources[0].get("status", {}).get("phase", "Completed")
-          == "Completed"
-  retries: 10
-  delay: 5
+    api_version: v1
+    kind: Pod
+    namespace: net-pr-2
+    name: httpd-ex
+  register: pod
+  until:  pod.get("resources", [])
+          and pod.resources[0].get("status", {}).get("phase", "") ==
+          "Running"
+  retries: 30
+  delay: 10
 
-# Simulate DR and restore
-- name: Delete resources
+- name: Delete ark restore (workaround to use common name for restore)
   k8s:
     state: absent
-    definition: "{{ lookup('file', 'net-pol-template.yml') }}"
+    definition: "{{ lookup('file', 'create-restore-net-pol.yml')}}"
 
-- name: Wait 2 minutes for namespace to be deleted
+# Testing
+- name: Extract the internal pod ip
   k8s_facts:
-    kind: Namespace
     api_version: v1
-    name: net-pr-1
-  register: ns
-  until: not ns.get("resources", [""])
-  retries: 10
-  delay: 5
+    kind: Pod
+    namespace: net-pr-2
+    name: httpd-ex
+  register: pod
 
-- name: Wait 2 minutes for namespace to be deleted
-  k8s_facts:
-    kind: Namespace
-    api_version: v1
-    name: net-pr-2
-  register: ns
-  until: not ns.get("resources", [""])
-  retries: 10
-  delay: 5
+- set_fact:
+    internal_ip: "{{ pod.resources[0].status.podIP }}"
 
-- name: Wait 2 minutes for namespace to be deleted
-  k8s_facts:
-    kind: Namespace
-    api_version: v1
-    name: net-ext
-  register: ns
-  until: not ns.get("resources", [""])
-  retries: 10
-  delay: 5
-
-# Restore part
-- name: Restore service
-  when: not travisCI
-  block:
-    - name: Create ark restore
-      k8s:
-        state: present
-        definition: "{{ lookup('file', 'create-restore-net-pol.yml')}}"
-
-    - name: Wait for restore to finish
-      k8s_facts:
-        kind: Restore
-        api_version: ark.heptio.com/v1
-        namespace: heptio-ark
-        name: net-pol-restore
-      register: restore
-      until: restore.get("resources", []) and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
-      retries: 20
-      delay: 10
-
-    - name: Wait for pod running on second namespace
-      k8s_facts:
-        api_version: v1
-        kind: Pod
-        namespace: net-pr-2
-        label_selectors: "app=httpd-ex"
-      register: pod
-      until:  pod.get("resources", [])
-              and pod.resources[0].get("status", {}).get("phase", "") ==
-              "Running"
-      retries: 30
-      delay: 10
-
-    - name: Delete ark restore (workaround to use common name for restore)
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'create-restore-net-pol.yml')}}"
-
-    # Testing
-    - name: Extract the internal pod ip
-      k8s_facts:
-        api_version: v1
-        kind: Pod
-        namespace: net-pr-2
-        label_selectors: "app=httpd-ex"
-      register: pod
-
-    - set_fact:
-        internal_ip: "{{ pod.resources[0].status.podIP }}"
-
-    - name: Ping pod from inside of the netnamespace
-      k8s:
-        state: present
-        definition:
-          apiVersion: batch/v1
-          kind: Job
+- name: Ping pod from inside of the netnamespace
+  k8s:
+    state: present
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: ping
+        namespace: net-pr-1
+      spec:
+        activeDeadlineSeconds: 100
+        template:
           metadata:
             name: ping
             namespace: net-pr-1
           spec:
-            activeDeadlineSeconds: 100
-            template:
-              metadata:
-                name: ping
-                namespace: net-pr-1
-              spec:
-                containers:
-                - name: ping
-                  image: centos/httpd-24-centos7
-                  command: ["ping",  "{{ internal_ip }}", "-c1"]
-                restartPolicy: Never
+            containers:
+            - name: ping
+              image: centos/httpd-24-centos7
+              command: ["ping",  "{{ internal_ip }}", "-c1"]
+            restartPolicy: Never
 
-    - name: Ensure job succeed
-      k8s_facts:
-        api_version: batch/v1
-        kind: Job
-        namespace: net-pr-1
+- name: Ensure job succeed
+  k8s_facts:
+    api_version: batch/v1
+    kind: Job
+    namespace: net-pr-1
+    name: ping
+  register: job
+  retries: 20
+  delay: 5
+  until:  job.get("resources", []) and
+          job.resources[0].get("status").get("active", 0) == 0 and
+          job.resources[0].status.get("succeeded", 0) == 1
+
+- name: Ping internal pod from outside of the netnamespace
+  k8s:
+    state: present
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
         name: ping
-      register: job
-      retries: 20
-      delay: 5
-      until:  job.get("resources", []) and
-              job.resources[0].get("status").get("active", 0) == 0 and
-              job.resources[0].status.get("succeeded", 0) == 1
-
-    - name: Ping internal pod from outside of the netnamespace
-      k8s:
-        state: present
-        definition:
-          apiVersion: batch/v1
-          kind: Job
+        namespace: net-ext
+      spec:
+        activeDeadlineSeconds: 15
+        template:
           metadata:
             name: ping
-            namespace: net-ext
           spec:
-            activeDeadlineSeconds: 15
-            template:
-              metadata:
-                name: ping
-              spec:
-                containers:
-                - name: ping
-                  image: centos/httpd-24-centos7
-                  command: ["ping",  "{{ internal_ip }}", "-c1"]
-                restartPolicy: Never
+            containers:
+            - name: ping
+              image: centos/httpd-24-centos7
+              command: ["ping",  "{{ internal_ip }}", "-c1"]
+            restartPolicy: Never
 
-    - name: Ensure job failed
-      k8s_facts:
-        api_version: batch/v1
-        kind: Job
-        namespace: net-ext
-        name: ping
-      register: job
-      retries: 20
-      delay: 5
-      until:  job.get("resources", []) and
-              job.resources[0].get("status").get("active", 0) == 0 and
-              job.resources[0].status.get("failed", 0) == 1
+- name: Ensure job failed
+  k8s_facts:
+    api_version: batch/v1
+    kind: Job
+    namespace: net-ext
+    name: ping
+  register: job
+  retries: 20
+  delay: 5
+  until:  job.get("resources", []) and
+          job.resources[0].get("status").get("active", 0) == 0 and
+          (
+            job.resources[0].status.get("failed", 0) == 1 or
+            job.resources[0].status.get("conditions", [{}])[0].get("type", "")
+            == "Failed"
+          )
 
-    # Cleanup
-    - name: Clean up
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'net-pol-template.yml') }}"
+# Cleanup
+- name: Clean up
+  k8s:
+    state: absent
+    definition: "{{ lookup('file', 'net-pol-template.yml') }}"
