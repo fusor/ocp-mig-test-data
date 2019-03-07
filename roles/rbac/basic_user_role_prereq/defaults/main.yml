@@ -1,0 +1,4 @@
+rbac_prereq: "{{ lookup('ENV', 'RBAC_PREREQ') }}"
+rbac_users:
+  - testuser1
+  - testuser2
