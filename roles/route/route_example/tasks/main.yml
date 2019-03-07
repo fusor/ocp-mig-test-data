@@ -1,5 +1,5 @@
 ---
-- name: Create route and backup
+- name: Create route
   block:
     - name: Create the namespace, service and route
       k8s:
@@ -17,68 +17,19 @@
       retries: 10
       delay: 3
 
-    # Backup part
-    - name: Create ark backup
-      k8s:
-        state : present
-        definition: "{{ lookup('file', 'create-backup-route.yml')}}"
-
-    - name: Wait for backup to complete
-      k8s_facts:
-        api_version: "ark.heptio.com/v1"
-        kind: "Backup"
-        namespace: "heptio-ark"
-      register: backup
-      until: backup
-            and (backup.resources | length > 0)
-            and (backup.resources[0].get("status", {}).get("phase", 0) == "Completed")
-      retries: 10
-      delay: 5
-
-    - name: Delete the namespace to simulate DR
-      k8s:
-        state: absent
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: route-one-example
-            labels:
-              app: route
-
-    - name: Wait for namespace to be deleted
-      k8s_facts:
-        api_version: v1
-        kind: Namespace
-        namespace: route-example
-        name: route-one-example
-      register: ns
-      until: ns.resources | length == 0
-      retries: 10
-      delay: 5
-
-# Restore part
-- name: Restore route
-  when: not travisCI
+- name: Create route and backup
+  when: with_backup
   block:
-    - name: Create ark restore
-      k8s:
-        state: present
-        definition: "{{ lookup('file', 'create-restore-route.yml')}}"
+    - name: Create backup
+      include_role:
+        name: backup
 
-    - name: Wait for restore to finish
-      k8s_facts:
-        api_version: v1
-        kind: Restore
-        namespace: heptio-ark
-        name: route-restore
-      register: restore
-      until: restore
-            and (restore.resources | length > 0)
-            and (restore.resources[0].get("status", {}).get("phase", 0) == "Completed")
-            and (restore.resources[0].get("status", {}).get("errors", 0) == 0)
-      retries: 20
-      delay: 15
+- name: Restore route
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
 
     - name: Checking the route after restore
       k8s_facts:
@@ -90,8 +41,3 @@
       until: route.resources | length > 0
       retries: 10
       delay: 3
-
-    - name: Delete ark restore
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'create-restore-route.yml')}}"

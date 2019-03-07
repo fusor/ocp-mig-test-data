@@ -3,6 +3,8 @@ kind: Namespace
 apiVersion: v1
 metadata:
   name: mysql-persistent
+  labels:
+    app: mysql
 ---
 apiVersion: v1
 kind: Secret

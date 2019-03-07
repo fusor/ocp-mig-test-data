@@ -1,9 +1,13 @@
 ---
-- name: debug info
-  debug:
-   msg: "Logging into cluster using KUBECONFIG: {{ ansible_env.KUBECONFIG }}"
+- name: Login ocp role
+  when: not prompt_login
+  block: 
+    - name: Prompt login
+      pause:
+        prompt: "Cluster login"
+      register: user
 
-- name: login to cluster
-  vars:
-    kubeadmin_password: "{{ ansible_env.kubeadmin_password }}"
-  shell: oc login -u {{ user }} -p {{ kubeadmin_password }}
+    - name: login to cluster
+      vars:
+        kubeadmin_password: "{{ ansible_env.kubeadmin_password }}"
+      shell: oc login -u {{ user.user_input }} -p {{ kubeadmin_password }}

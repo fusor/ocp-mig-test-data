@@ -1,0 +1,5 @@
+backup_name: hellopod-backup
+backup_label: hello-openshift
+restore_name: hellopod-restore
+namespaces_to_delete:
+  - hello-pod

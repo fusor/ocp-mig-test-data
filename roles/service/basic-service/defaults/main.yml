@@ -1,0 +1,5 @@
+backup_label: hello-openshift
+restore_name: service-basic-restore
+backup_name: service-basic-backup
+namespaces_to_delete:
+  - service-example

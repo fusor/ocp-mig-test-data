@@ -1,86 +1,43 @@
-# Deploy mysql with pvc
-- name: Deploy mysql with pvc from yml
-  k8s:
-    state : present
-    definition: "{{ lookup('file', 'mysql-persistent-template.yml')}}"
-
-- name: Wait for mysql with pvc deployment
-  k8s_facts:
-    kind: Pod
-    namespace: mysql-persistent
-    label_selectors: "deployment=mysql-1"
-  register: pod
-  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
-  retries: 10
-  delay: 15
-
-- name: Check if volume is bound
-  k8s_facts:
-    kind: PersistentVolumeClaim
-    namespace: mysql-persistent
-    label_selectors: "app=mysql"
-  register: volume
-  until: volume.get("resources", []) and volume.resources[0].get("status", {}).get("phase", "") == "Bound"
-  retries: 10
-  delay: 15
-
-# Create a backup
-- name: Create ark backup of mysql
-  k8s:
-    state : present
-    definition: "{{ lookup('file', 'create-backup-mysql-persistent.yml')}}"
-
-- name: Wait for backup to complete
-  k8s_facts:
-    kind: Backup
-    api_version: ark.heptio.com/v1
-    namespace: heptio-ark
-    name: "mysql-persistent-backup"
-  register: backup
-  until: backup.get("resources", []) and backup.resources[0].get("status", {}).get("phase", "") == "Completed"
-  retries: 10
-  delay: 5
-
-# Simulate DR and restore
-- name: Delete mysql
-  k8s:
-    state: absent
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: mysql-persistent
-
-- name: Wait for namespace to be deleted
-  k8s_facts:
-    kind: Namespace
-    api_version: v1
-    name: "mysql-persistent"
-  register: ns
-  until: not ns.get("resources", [""])
-  retries: 10
-  delay: 5
-
-# Restore part
-- name: Restore service
-  when: not travisCI
+- name: Deploy mysql with pvc
   block:
-    - name: Create ark restore of mysql
+    - name: Deploy mysql with pvc from yml
       k8s:
-        state: present
-        definition: "{{ lookup('file', 'create-restore-mysql-persistent.yml')}}"
+        state : present
+        definition: "{{ lookup('file', 'mysql-persistent-template.yml')}}"
 
-    - name: Wait for restore to finish
+    - name: Wait for mysql with pvc deployment
       k8s_facts:
-        kind: Restore
-        api_version: ark.heptio.com/v1
-        namespace: heptio-ark
-        name: "mysql-persistent-restore"
-      register: restore
-      until: restore.get("resources", []) and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
-      retries: 20
-      delay: 10
-      ignore_errors: yes
+        kind: Pod
+        namespace: mysql-persistent
+        label_selectors: "deployment=mysql-1"
+      register: pod
+      until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+      retries: 10
+      delay: 15
+
+    - name: Check if volume is bound
+      k8s_facts:
+        kind: PersistentVolumeClaim
+        namespace: mysql-persistent
+        label_selectors: "app=mysql"
+      register: volume
+      until: volume.get("resources", []) and volume.resources[0].get("status", {}).get("phase", "") == "Bound"
+      retries: 10
+      delay: 15
+
+- name: Create a backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
 
     - name: Wait for mysql with pvc deployment
       k8s_facts:
@@ -101,9 +58,3 @@
       until: volume.get("resources", []) and volume.get("status", {}).get("phase", "") == "Bound"
       retries: 10
       delay: 15
-
-
-    - name: Delete ark restore of mysql (workaround to use common name for restore)
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'create-restore-mysql-persistent.yml')}}"

@@ -1,0 +1,71 @@
+- name: Delete resources
+  k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ item }}"
+  loop: "{{ namespaces_to_delete }}"
+
+- name: Wait 2 minutes for namespace to be deleted
+  k8s_facts:
+    kind: Namespace
+    api_version: v1
+    name: "{{ item }}"
+  register: ns
+  until: not ns.get("resources", [""])
+  retries: 20
+  delay: 30
+  loop: "{{ namespaces_to_delete }}"
+
+- name: Create ark restore of resource
+  k8s:
+    state: present
+    definition:
+      apiVersion: ark.heptio.com/v1
+      kind: Restore
+      metadata:
+        name: "{{ restore_name }}"
+        namespace: heptio-ark
+      spec:
+        backupName: "{{ backup_name }}"
+        excludedResources:
+        - node
+        - events
+        - events.events.k8s.io
+        - backups.ark.heptio.com
+        - restores.ark.heptio.com
+        includedNamespaces:
+        - '*'
+
+- name: Wait for restore to finish
+  k8s_facts:
+    kind: Restore
+    api_version: ark.heptio.com/v1
+    namespace: heptio-ark
+    name: "{{ restore_name }}"
+  register: restore
+  until: restore.get("resources", []) and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
+  retries: 20
+  delay: 30
+
+- name: Delete ark restore of resource (workaround to use common name for restore)
+  k8s:
+    state: absent
+    definition:
+      apiVersion: ark.heptio.com/v1
+      kind: Restore
+      metadata:
+        name: "{{ restore_name }}"
+        namespace: heptio-ark
+      spec:
+        backupName: "{{ backup_name }}"
+        excludedResources:
+        - node
+        - events
+        - events.events.k8s.io
+        - backups.ark.heptio.com
+        - restores.ark.heptio.com
+        includedNamespaces:
+        - '*'

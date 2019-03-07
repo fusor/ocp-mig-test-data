@@ -1,5 +1,5 @@
 ---
-- name: Create service and backup
+- name: Create service
   block:
     - name: Create service example
       k8s:
@@ -29,58 +29,19 @@
       retries: 24
       delay: 5
 
-      # Backup part
-    - name: Create ark backup
-      k8s:
-        state: present
-        definition: "{{ lookup('file', 'create-backup-basic-service.yml') }}"
-
-    - name: Wait for ark to finish backup
-      k8s_facts:
-        kind: Backup
-        namespace: heptio-ark
-        name: service-basic-backup
-      register: backup
-      until:  backup.get("resources", [])
-              and backup.resources[0].get("status", {}).get("phase", 0) == 'Completed'
-      retries: 20
-      delay: 5
-
-    - name: Delete service namespace
-      k8s:
-        state: absent
-        definition:
-          kind: Namespace
-          metadata:
-            name: service-example
-
-    - name: Wait for delete completion
-      k8s_facts:
-        kind: Namespace
-        name: service-example
-      register: delete
-      until: delete.resources | length > 0
-      retries: 20
-      delay: 6
-
-# Restore part
-- name: Restore service
-  when: not travisCI
+- name: Create a backup
+  when: with_backup
   block:
-    - name: Restore ark backup
-      k8s:
-        state: present
-        definition: "{{ lookup('file', 'restore-backup-basic-service.yml') }}"
+    - name: Create backup
+      include_role:
+        name: backup
 
-    - name: Wait for restore to finish
-      k8s_facts:
-        kind: Restore
-        namespace: heptio-ark
-        name: service-basic-backup
-      register: restore
-      until: restore and restore.resources[0].get("status", {}).get("phase", 0) == "Completed"
-      retries: 20
-      delay: 6
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
 
     - name: Wait 2 minutes for service to appear
       k8s_facts:
@@ -91,8 +52,3 @@
       until: svc and (svc.resources | length == 5)
       retries: 10
       delay: 10
-
-    - name: Remove old restore
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'restore-backup-basic-service.yml') }}"

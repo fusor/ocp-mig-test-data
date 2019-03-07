@@ -1,10 +1,8 @@
 - hosts: localhost
   vars:
-    travisCI: "{{ lookup('ENV', 'TRAVIS') }}"
-  vars_prompt:
-  - name: user
-    prompt: "Cluster login"
-    private: no
+    with_backup: true
+    with_restore: true
+    prompt_login: "{{ lookup('ENV', 'PROMPT_LOGIN') }}"
   roles:
   - login_ocp
   - route/route_example

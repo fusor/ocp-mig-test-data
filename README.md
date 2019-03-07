@@ -11,6 +11,10 @@ Set cluster password to env variable like this:
 
 Run ```ansible-playbook cake-php.yml``` to deploy, backup and restore a sample app.
 
+It's also possible to optionally run backup/restore: ```ansible-playbook cake-php.yml -e with_backup=false -e with_restore=false```
+
+Loging in to cluster can be enabled by setting PROMPT_LOGIN: ```export PROMPT_LOGIN=true```
+
 # Test cases info
 
 We need to keep track of supported and unsupported test cases.

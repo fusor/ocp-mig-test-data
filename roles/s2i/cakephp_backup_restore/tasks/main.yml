@@ -1,79 +1,34 @@
-# Deploy cakephp
-- name: Deploy cakephp from yml
-  k8s:
-    state : present
-    definition: "{{ lookup('file', 'cakephp-template.yml')}}"
-
-- name: Wait for cakephp deployment
-  k8s_facts:
-    kind: Pod
-    namespace: cakephp-example
-    label_selectors: "app=cakephp-example"
-  register: pod
-  until:  pod.get("resources", []) | length > 0
-          and pod.resources[0].get("status", {}).get("phase", "") == "Running"
-  retries: 20
-  delay: 10
-
-# Create a backup
-- name: Create ark backup of cakephp
-  k8s:
-    state : present
-    definition: "{{ lookup('file', 'create-backup-cakephp.yml')}}"
-
-- name: Wait for backup to complete
-  k8s_facts:
-    kind: Backup
-    api_version: ark.heptio.com/v1
-    namespace: heptio-ark
-    name: cakephp-backup
-  register: backup
-  until:  backup.get("resources", []) | length > 0
-          and backup.resources[0].get("status", {}).get("phase", "") == "Completed"
-  retries: 10
-  delay: 5
-
-# Simulate DR and restore
-- name: Delete cakephp app
-  k8s:
-    state: absent
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: cakephp-example
-
-- name: Wait 2 minutes for namespace to be deleted
-  k8s_facts:
-    kind: Namespace
-    api_version: v1
-    name: cakephp-example
-  register: ns
-  until: ns.get("resources", [""]) | length == 0
-  retries: 10
-  delay: 5
-
-# Restore part
-- name: Restore service
-  when: not travisCI
+- name: Deploy cakephp
   block:
-    - name: Create ark restore of cakephp
+    - name: Deploy cakephp from yml
       k8s:
-        state: present
-        definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"
+        state : present
+        definition: "{{ lookup('file', 'cakephp-template.yml')}}"
 
-    - name: Wait for restore to finish
+    - name: Wait for cakephp deployment
       k8s_facts:
-        kind: Restore
-        api_version: ark.heptio.com/v1
-        namespace: heptio-ark
-        name: cakephp-restore
-      register: restore
-      until:  restore.get("resources", []) | length > 0
-              and restore.resources[0].get("status", {}).get("phase", "") == "Completed"
+        kind: Pod
+        namespace: cakephp-example
+        label_selectors: "app=cakephp-example"
+      register: pod
+      until:  pod.get("resources", []) | length > 0
+              and pod.resources[0].get("status", {}).get("phase", "") == "Running"
       retries: 20
-      delay: 10
-      ignore_errors: yes
+      delay: 30
+
+- name: Create a backup of cakephp
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
 
     # Check every restored resource
     - name: Wait for cakephp deployment
@@ -138,8 +93,3 @@
       until: dc.get("resouces", []) | length > 0
       retries: 20
       delay: 30
-
-    - name: Delete ark restore of cakephp
-      k8s:
-        state: absent
-        definition: "{{ lookup('file', 'create-restore-cakephp.yml')}}"

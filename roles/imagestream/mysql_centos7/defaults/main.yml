@@ -1,0 +1,5 @@
+backup_name: mysql-centos7-imagestream-backup
+backup_label: mysql
+restore_name: mysql-centos7-imagestream-restore
+namespaces_to_delete: 
+  - mysql-centos7-imagestream
