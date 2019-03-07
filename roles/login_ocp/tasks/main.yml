@@ -1,6 +1,6 @@
 ---
 - name: Login ocp role
-  when: not prompt_login
+  when: prompt_login
   block: 
     - name: Prompt login
       pause:
