@@ -28,6 +28,7 @@ We need to keep track of supported and unsupported test cases.
   - Route - ```route```
   - CRD - ```crd```
   - Service - ```service```
+  - Pipeline - ```pipeline```
 
 * Tests cases that are expected to fail:
 

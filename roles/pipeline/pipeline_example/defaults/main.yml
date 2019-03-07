@@ -1,0 +1,5 @@
+backup_name: pipeline-backup
+backup_label: pipeline
+restore_name: pipeline-restore
+namespaces_to_delete:
+  - pipeline-example
