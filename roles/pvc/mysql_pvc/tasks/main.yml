@@ -31,9 +31,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name:  mysql-persistent-backup
-        backup_label: mysql
 
 - name: Restore service
   when: with_restore
@@ -41,11 +38,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: mysql-persistent-restore
-        backup_name: mysql-persistent-backup
-        namespaces_to_delete:
-          - mysql-persistent
 
     - name: Wait for mysql with pvc deployment
       k8s_facts:

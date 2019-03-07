@@ -1,0 +1,5 @@
+backup_name: nginx-backup
+backup_label: nginx
+restore_name: nginx-restore
+namespaces_to_delete:
+  - nginx-example

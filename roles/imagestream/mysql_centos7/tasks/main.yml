@@ -21,9 +21,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: mysql-centos7-imagestream-backup
-        backup_label: mysql
 
 - name: Restore resource
   when: with_restore
@@ -31,11 +28,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: mysql-centos7-imagestream-restore
-        backup_name: mysql-centos7-imagestream-backup
-        namespaces_to_delete: 
-          - mysql-centos7-imagestream
 
     - name: Wait for image stream to appear
       k8s_facts:

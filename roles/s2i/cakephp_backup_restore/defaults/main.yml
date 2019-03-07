@@ -1,0 +1,5 @@
+backup_name: cakephp-backup
+backup_label: hello-openshift
+restore_name: cakephp-restore
+namespaces_to_delete:
+  - cakephp-example

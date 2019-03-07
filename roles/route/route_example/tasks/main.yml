@@ -23,9 +23,6 @@
     - name: Create backup
       include_role:
         name: backup
-      vars:
-        backup_name: route-backup
-        backup_label: route
 
 - name: Restore route
   when: with_restore
@@ -33,11 +30,6 @@
     - name: Start restoring 
       include_role:
         name: restore
-      vars:
-        restore_name: route-restore
-        backup_name: route-backup
-        namespaces_to_delete:
-          - route-example
 
     - name: Checking the route after restore
       k8s_facts:

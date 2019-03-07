@@ -1,0 +1,5 @@
+backup_name:  mysql-persistent-backup
+backup_label: mysql
+restore_name: mysql-persistent-restore
+namespaces_to_delete:
+  - mysql-persistent
