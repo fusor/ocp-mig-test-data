@@ -6,18 +6,8 @@
         state: present
         definition: "{{ lookup('file', 'install-pipeline-example.yml')}}"
 
-    - name: Checking the build is created and started
-      k8s_facts:
-        api_version: v1
-        kind: BuildConfig
-        namespace: pipeline-example
-        label_selectors:
-          - app = pipeline
-      register: buildconfig
-      until: buildconfig
-             and (buildconfig.resources | length > 0)
-      retries: 10
-      delay: 5
+    - name: Check resource presence
+      include: check.yml
 
 - name: Create a backup
   when: with_backup
@@ -33,15 +23,5 @@
       include_role:
         name: restore
 
-- name: Checking the build is restored
-  k8s_facts:
-    api_version: v1
-    kind: BuildConfig
-    namespace: pipeline-example
-    label_selectors:
-      - app = pipeline
-  register: buildconfig
-  until: buildconfig
-         and (buildconfig.resources | length > 0)
-  retries: 10
-  delay: 5
+    - name: Check resource presence
+      include: check.yml

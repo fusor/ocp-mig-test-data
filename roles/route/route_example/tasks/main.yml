@@ -6,16 +6,8 @@
         state: present
         definition: "{{ lookup('file', 'base.yml')}}"
 
-    - name: Checking the route before backup
-      k8s_facts:
-        api_version: route.openshift.io/v1
-        kind: Route
-        namespace: route-example
-        name: route-one
-      register: route
-      until: route.resources | length > 0
-      retries: 10
-      delay: 3
+    - name: Check resource presence
+      include: check.yml
 
 - name: Create route and backup
   when: with_backup
@@ -31,13 +23,5 @@
       include_role:
         name: restore
 
-    - name: Checking the route after restore
-      k8s_facts:
-        api_version: route.openshift.io/v1
-        kind: Route
-        namespace: route-example
-        name: route-one
-      register: route
-      until: route.resources | length > 0
-      retries: 10
-      delay: 3
+    - name: Check resource presence
+      include: check.yml
