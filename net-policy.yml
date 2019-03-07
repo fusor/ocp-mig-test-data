@@ -7,6 +7,6 @@
       prompt: "Cluster login"
       private: no
   roles:
-  # - login_ocp
-  # - net-policy/net-policy-extended
+  - login_ocp
+  - net-policy/net-policy-extended
   - net-policy/net-policy-ext-multitenant

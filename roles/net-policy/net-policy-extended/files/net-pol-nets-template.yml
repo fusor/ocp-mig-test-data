@@ -13,7 +13,7 @@ spec:
     - namespaceSelector:
         matchLabels:
           group: net-group
-          
+
 # TODO: needed testing
 ---
 kind: NetworkPolicy
@@ -29,8 +29,7 @@ spec:
       app: httpd-ex
   ingress:
   - {}
-  
-# TODO: needed testing
+
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

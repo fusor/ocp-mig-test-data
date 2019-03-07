@@ -68,7 +68,7 @@
         namespace: net-mul-1
       spec:
         activeDeadlineSeconds: 100
-        template:         
+        template:
           metadata:
             name: ping
             namespace: net-mul-1
@@ -77,7 +77,7 @@
             - name: ping
               image: centos/httpd-24-centos7
               command: ["ping",  "{{ internal_ip }}", "-c1"]
-            restartPolicy: Never       
+            restartPolicy: Never
 
 - name: Ensure job succeed
   k8s_facts:
@@ -88,7 +88,7 @@
   register: job
   retries: 20
   delay: 5
-  until:  job.get("resources", []) and 
+  until:  job.get("resources", []) and
           job.resources[0].get("status").get("active", 0) == 0 and
           job.resources[0].status.get("succeeded", 0) == 1
 
@@ -103,7 +103,7 @@
         namespace: net-mul-ext
       spec:
         activeDeadlineSeconds: 15
-        template:         
+        template:
           metadata:
             name: ping
           spec:
@@ -122,7 +122,7 @@
   register: job
   retries: 20
   delay: 5
-  until:  job.get("resources", []) and 
+  until:  job.get("resources", []) and
           job.resources[0].get("status").get("active", 0) == 0 and
           job.resources[0].status.get("failed", 0) == 1
 
