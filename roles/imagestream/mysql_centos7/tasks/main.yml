@@ -5,15 +5,8 @@
         state: present
         definition: "{{ lookup('file', 'mysql-centos7-is-example.yml')}}"
 
-    - name: Wait for image stream to appear
-      k8s_facts:
-        kind: ImageStream
-        namespace: mysql-centos7-imagestream
-        name: mysql
-      register: imagestream
-      until: imagestream.get("resources", [])
-      retries: 20
-      delay: 10
+    - name: Check resource presence
+      include: check.yml
 
 - name: Create backup
   when: with_backup
@@ -29,12 +22,5 @@
       include_role:
         name: restore
 
-    - name: Wait for image stream to appear
-      k8s_facts:
-        kind: ImageStream
-        namespace: mysql-centos7-imagestream
-        name: mysql
-      register: imagestream
-      until: imagestream.get("resources", [])
-      retries: 20
-      delay: 10
+    - name: Check resource presence
+      include: check.yml

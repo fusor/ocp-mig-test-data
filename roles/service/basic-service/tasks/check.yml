@@ -1,0 +1,22 @@
+- name: Wait 1 minute for services become available
+  k8s_facts:
+    kind: Service
+    api_version: v1
+    namespace: service-example
+    label_selectors: "name=my-service"
+  register: deploy
+  until: deploy.get("resources", []) and deploy.resources | length == 5
+  retries: 12
+  delay: 5
+
+- name: Wait 2 minute for deployment
+  k8s_facts:
+    kind: Deployment
+    api_version: v1
+    namespace: service-example
+    label_selectors: "name=my-service"
+  register: deploy
+  until:  deploy.get("resources", [])
+          and deploy.resources[0].get('status', {}).get('availableReplicas', -1) == deploy.resources[0].get("spec", {}).get('replicas', -2)
+  retries: 24
+  delay: 5

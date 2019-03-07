@@ -5,16 +5,8 @@
         state: present
         definition: "{{ lookup('file', 'crd-template.yml')}}"
 
-    - name: Wait for CRD creation
-      k8s_facts:
-        api_version: apiextensions.k8s.io/v1beta1
-        kind: CustomResourceDefinition
-        name: crexamples.samplecontroller.k8s.io
-        namespace: crd-example
-      register: crd
-      until:  crd.get("resources", [])
-      retries: 10
-      delay: 5
+    - name: Check resource presence
+      include: check.yml
 
     - name: Create custom resource
       k8s:
@@ -45,16 +37,8 @@
       include_role:
         name: restore
 
-    - name: Wait 2 minutes for CRD to appear
-      k8s_facts:
-        api_version: apiextensions.k8s.io/v1beta1
-        kind: CustomResourceDefinition
-        namespace: crd-example
-        name: crexamples.samplecontroller.k8s.io
-      register: crd
-      until: crd and (crd.resources | length > 0)
-      retries: 10
-      delay: 10
+    - name: Check resource presence
+      include: check.yml
 
     - name: Wait 2 minutes for custom resource to appear
       k8s_facts:

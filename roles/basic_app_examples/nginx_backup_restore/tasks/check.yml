@@ -1,0 +1,11 @@
+- name: Wait 2 minutes for nginx deployment
+  k8s_facts:
+    kind: Deployment
+    api_version: apps/v1
+    namespace: nginx-example
+    label_selectors: "app=nginx"
+  register: deploy
+  until:  deploy.get("resources", [])
+          and deploy.resources[0].get("spec", {}).get("replicas", -1) == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
+  retries: 10
+  delay: 10
