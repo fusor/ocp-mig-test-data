@@ -1,0 +1,29 @@
+- name: Create resources
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'net-pol-template.yml') }}"
+
+- name: Test resources
+  include: check.yml
+
+- name: Create resources
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'net-pol-nets-template.yml') }}"
+
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+- name: Test resources
+  include: check.yml

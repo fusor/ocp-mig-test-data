@@ -1,0 +1,12 @@
+- name: Wait for pod running on second namespace
+  k8s_facts:
+    api_version: v1
+    kind: Pod
+    namespace: net-pr-2
+    name: httpd-ex
+  register: pod
+  until:  pod.get("resources", [])
+          and pod.resources[0].get("status", {}).get("phase", "") ==
+          "Running"
+  retries: 30
+  delay: 10
