@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-pr-1
+  labels:
+    app: net-policy
+    group: net-group
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-pr-2
+  labels:
+    app: net-policy
+    group: net-group
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-ext
+  labels:
+    app: net-policy
+

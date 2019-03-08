@@ -4,6 +4,7 @@
     with_backup: false
     with_restore: false
   roles:
+    - net-policy/net-policy-extended
     - rbac/basic_sa_with_role
     - pvc/mysql_pvc
     - deployment/nginx_deployment
