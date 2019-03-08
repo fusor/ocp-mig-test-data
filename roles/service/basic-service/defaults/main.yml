@@ -3,3 +3,5 @@ restore_name: service-basic-restore
 backup_name: service-basic-backup
 namespaces_to_delete:
   - service-example
+with_backup: true
+with_restore: true
