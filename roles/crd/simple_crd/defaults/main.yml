@@ -3,3 +3,5 @@ backup_label: crd-example
 restore_name: crd-restore
 namespaces_to_delete:
   - crd-example
+with_backup: true
+with_restore: true

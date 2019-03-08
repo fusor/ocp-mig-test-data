@@ -3,3 +3,5 @@ backup_label: basic-sa-role
 restore_name: sa-role-restore
 namespaces_to_delete:
   - basic-sa-role
+with_backup: true
+with_restore: true

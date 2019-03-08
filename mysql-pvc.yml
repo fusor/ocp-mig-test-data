@@ -1,8 +1,4 @@
 - hosts: localhost
-  vars:
-    with_backup: true
-    with_restore: true
-    prompt_login: "{{ lookup('ENV', 'PROMPT_LOGIN') }}"
   roles:
   - login_ocp
   - pvc/mysql_pvc

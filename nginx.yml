@@ -1,9 +1,4 @@
 - hosts: localhost
-  vars:
-    with_backup: true
-    with_restore: true
-    state: present
-    prompt_login: "{{ lookup('ENV', 'PROMPT_LOGIN') }}"
   roles:
   - login_ocp
   - basic_app_examples/nginx_backup_restore
