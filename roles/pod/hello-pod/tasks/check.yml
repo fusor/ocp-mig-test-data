@@ -1,0 +1,9 @@
+- name: Wait for pod to run
+  k8s_facts:
+    kind: Pod
+    namespace: hello-pod
+    label_selectors: "name=hello-openshift"
+  register: pod
+  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  retries: 20
+  delay: 10

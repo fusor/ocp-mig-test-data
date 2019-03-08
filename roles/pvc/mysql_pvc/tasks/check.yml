@@ -1,0 +1,19 @@
+- name: Wait for mysql with pvc deployment
+  k8s_facts:
+    kind: Pod
+    namespace: mysql-persistent
+    label_selectors: "deployment=mysql-1"
+  register: pod
+  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  retries: 10
+  delay: 15
+
+- name: Check if volume is restored and bound
+  k8s_facts:
+    kind: PersistentVolumeClaim
+    namespace: mysql-persistent
+    label_selectors: "app=mysql"
+  register: volume
+  until: volume.get("resources", []) and volume.get("status", {}).get("phase", "") == "Bound"
+  retries: 10
+  delay: 15

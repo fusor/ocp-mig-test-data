@@ -29,6 +29,7 @@ We need to keep track of supported and unsupported test cases.
   - CRD - ```crd```
   - Service - ```service```
   - NetworkPolicy - ```net-policy\*``` - prerequisites needed
+  - Pipeline - ```pipeline```
 
 * Tests cases that are expected to fail:
 

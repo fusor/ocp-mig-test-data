@@ -5,17 +5,8 @@
         state: present
         definition: "{{ lookup('file', 'nginx-deployment-template.yml')}}"
 
-    - name: Check for deployment presence
-      k8s_facts:
-        kind: Deployment
-        api_version: apps/v1
-        namespace: nginx-deployment
-        label_selectors: "app=nginx-deployment"
-      register: deploy
-      until:  deploy.get("resources", [])
-              and deploy.resources[0].get("status", {}).get("replicas", -1) == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
-      retries: 10
-      delay: 10
+    - name: Check resource presence
+      include: check.yml
 
 - name: Create backup
   when: with_backup
@@ -31,14 +22,5 @@
       include_role:
         name: restore
 
-    - name: Check for deployment presence
-      k8s_facts:
-        kind: Deployment
-        api_version: apps/v1beta1
-        namespace: nginx-deployment
-        label_selectors: "app=nginx-deployment"
-      register: deploy
-      until:  deploy.get("resources", [])
-              and deploy.resources[0].get("spec", {}).get("replicas", -1) == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
-      retries: 10
-      delay: 10
+    - name: Check resource presence
+      include: check.yml

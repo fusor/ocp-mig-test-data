@@ -1,0 +1,9 @@
+- name: Wait for image stream to appear
+  k8s_facts:
+    kind: ImageStream
+    namespace: mysql-centos7-imagestream
+    name: mysql
+  register: imagestream
+  until: imagestream.get("resources", [])
+  retries: 20
+  delay: 10

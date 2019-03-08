@@ -1,24 +1,25 @@
-- name: Create is
+---
+- name: Create Pipeline
   block:
-    - name: Create image stream
+    - name: Create Jenkins-pipeline BuildConfig
       k8s:
         state: present
-        definition: "{{ lookup('file', 'mysql-centos7-is-example.yml')}}"
+        definition: "{{ lookup('file', 'install-pipeline-example.yml')}}"
 
     - name: Check resource presence
       include: check.yml
 
-- name: Create backup
+- name: Create a backup
   when: with_backup
   block:
     - name: Create backup
       include_role:
         name: backup
 
-- name: Restore resource
+- name: Restore pipeline
   when: with_restore
   block:
-    - name: Start restoring 
+    - name: Start restoring
       include_role:
         name: restore
 

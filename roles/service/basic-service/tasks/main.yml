@@ -6,28 +6,8 @@
         state: present
         definition: "{{ lookup('file', 'service-template.yml') }}"
 
-    - name: Wait 1 minute for services become available
-      k8s_facts:
-        kind: Service
-        api_version: v1
-        namespace: service-example
-        label_selectors: "name=my-service"
-      register: deploy
-      until: deploy.get("resources", []) and deploy.resources | length == 5
-      retries: 12
-      delay: 5
-
-    - name: Wait 2 minute for deployment
-      k8s_facts:
-        kind: Deployment
-        api_version: v1
-        namespace: service-example
-        label_selectors: "name=my-service"
-      register: deploy
-      until:  deploy.get("resources", [])
-              and deploy.resources[0].get('status', {}).get('availableReplicas', -1) == deploy.resources[0].get("spec", {}).get('replicas', -2)
-      retries: 24
-      delay: 5
+    - name: Check resource presence
+      include: check.yml
 
 - name: Create a backup
   when: with_backup
@@ -43,12 +23,5 @@
       include_role:
         name: restore
 
-    - name: Wait 2 minutes for service to appear
-      k8s_facts:
-        api_version: v1
-        kind: Service
-        namespace: service-example
-      register: svc
-      until: svc and (svc.resources | length == 5)
-      retries: 10
-      delay: 10
+    - name: Check resource presence
+      include: check.yml

@@ -14,3 +14,4 @@
     - imagestream/mysql_centos7
     - crd/simple_crd
     - pod/hello-pod
+    - pipeline/pipeline_example
