@@ -6,6 +6,7 @@
   roles:
     - net-policy/net-policy-extended
     - rbac/basic_sa_with_role
+    - quotas_limits/resource_quotas
     - pvc/mysql_pvc
     - deployment/nginx_deployment
     - route/route_example

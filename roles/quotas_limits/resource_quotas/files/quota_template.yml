@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quota-pr
+  labels:
+    app: quotas
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: imagestream-quota
+  namespace: quota-pr
+  labels:
+    app: quotas
+spec:
+  hard:
+    pods: "2" 
+    requests.cpu: "1" 
+    requests.memory: 1Gi 
+    limits.cpu: "2" 
+    limits.memory: 2Gi 
+  scope:
+    - BestEffort
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  namespace: quota-pr
+  name: mem-limit-range
+  labels:
+    app: quotas
+spec:
+  limits:
+    - type: "Pod"
+      max:
+        cpu: "2" 
+        memory: "1Gi" 
+      min:
+        cpu: "200m" 
+        memory: "6Mi" 
+    - type: "Container"
+      max:
+        cpu: "2" 
+        memory: "1Gi" 
+      min:
+        cpu: "100m" 
+        memory: "4Mi" 
+      default:
+        cpu: "300m" 
+        memory: "200Mi" 
+      defaultRequest:
+        cpu: "200m" 
+        memory: "100Mi" 
+      maxLimitRequestRatio:
+        cpu: "10"
+  requests:
+    cpu: "1"
+    memory: "64Mi"
+        
+

@@ -1,0 +1,8 @@
+- name: Wait for namespace to be created
+  k8s_facts:
+    kind: Namespace
+    name: quota-pr
+  register: ns
+  retries: 10
+  delay: 5
+  until: ns.get("resources", [])
