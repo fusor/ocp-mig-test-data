@@ -1,0 +1,26 @@
+- name: Create role and role bindings
+  block:
+    - name: Start role creation
+      k8s:
+        state : present
+        definition: "{{ lookup('file', 'rbac-config-template.yml')}}"
+
+    - name: Check resource presence
+      include: check.yml
+
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create roles backup
+      include_role:
+        name: backup
+
+- name: Restore service account
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml

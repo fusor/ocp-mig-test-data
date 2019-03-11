@@ -1,0 +1,17 @@
+- name: Wait for roles to appear
+  k8s_facts:
+    kind: Role
+    namespace: testrbac
+  register: roles
+  until: roles.get("resources", [])
+  retries: 20
+  delay: 10
+
+- name: Wait for roles bindings to appear
+  k8s_facts:
+    kind: RoleBinding
+    namespace: testrbac
+  register: roles
+  until: roles.get("resources", [])
+  retries: 20
+  delay: 10

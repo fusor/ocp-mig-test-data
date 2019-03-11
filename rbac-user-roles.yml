@@ -1,0 +1,5 @@
+- hosts: localhost
+  roles:
+  - login_ocp
+  - rbac/basic_user_role_prereq
+  - rbac/basic_user_role
