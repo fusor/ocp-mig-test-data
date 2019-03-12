@@ -4,6 +4,9 @@
     with_backup: false
     with_restore: false
   roles:
+    - build-config/custom-build
+    - job/cron_job_example
+    - job/job_example
     - net-policy/net-policy-extended
     - rbac/basic_sa_with_role
     - quotas_limits/resource_quotas

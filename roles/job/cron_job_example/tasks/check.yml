@@ -1,0 +1,10 @@
+- name: Check cron job exists
+  k8s_facts:
+    api_version: batch/v1beta1
+    kind: CronJob
+    namespace: cron-job-ns
+    name: hello
+  register: job
+  retries: 10
+  delay: 5
+  until: job.get('resources', [])

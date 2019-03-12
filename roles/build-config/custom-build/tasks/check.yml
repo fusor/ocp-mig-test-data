@@ -1,0 +1,33 @@
+- name: Extracting api server hostname address
+  shell: "oc config current-context | cut -d/ -f2 | tr - ."
+  register: api_host
+
+- name: Triggering generic build
+  uri:
+    url: "https://{{ api_host.stdout }}/apis/build.openshift.io/v1/namespaces/{{ namespace }}/buildconfigs/{{ build_name }}/webhooks/{{ secret }}/generic"
+    method: POST
+    validate_certs: False
+
+- name: Check for build config
+  k8s_facts:
+    kind: BuildConfig
+    namespace: "{{ namespace }}"
+    name: "{{ build_name }}"
+  register: build
+  retries: 10
+  delay: 10
+  until:  build.get("resources", [])
+
+- name: Check for build completed
+  k8s_facts:
+    kind: Build
+    api_version: build.openshift.io/v1
+    namespace: "{{ namespace }}"
+    label_selectors:
+      - app = custom-build
+  register: build
+  retries: 10
+  delay: 10
+  until:  build.get("resources", []) and
+          build.resources[0].get("status", {}).get("phase", "") == 
+          "Complete"

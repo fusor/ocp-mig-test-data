@@ -1,0 +1,7 @@
+backup_name: job-backup
+backup_label: job
+restore_name: job-restore
+namespaces_to_delete: 
+  - job-ns
+with_backup: true
+with_restore: false

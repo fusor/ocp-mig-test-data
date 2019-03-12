@@ -1,0 +1,22 @@
+- name: Deploy cron job
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'cron-job-template.yml') }}"
+
+- name: Check resource presence
+  include: check.yml
+
+- name: Create backup
+  include_role:
+    name: backup
+  when: with_backup
+
+- name: Restore cron job
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml

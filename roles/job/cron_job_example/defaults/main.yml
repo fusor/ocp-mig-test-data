@@ -1,0 +1,7 @@
+backup_name: cron-job-backup
+backup_label: cron
+restore_name: cron-job-restore
+namespaces_to_delete: 
+  - cron-job-ns
+with_backup: true
+with_restore: true
