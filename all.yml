@@ -4,6 +4,8 @@
     with_backup: false
     with_restore: false
   roles:
+    - deployment/replica_set
+    - scc
     - net-policy/net-policy-extended
     - rbac/basic_sa_with_role
     - quotas_limits/resource_quotas

@@ -1,0 +1,28 @@
+- name: Wait for namespace to be created
+  k8s_facts:
+    kind: Namespace
+    name: scc-ns
+  register: ns
+  retries: 10
+  delay: 5
+  until: ns.get("resources", [])
+
+- name: Check group is created
+  k8s_facts:
+    api_version: user.openshift.io/v1
+    kind: Group
+    name: testusers
+  register: group
+  retries: 10
+  delay: 5
+  until: group.get("resources", [])
+
+- name: Check scc is present
+  k8s_facts:
+    kind: SecurityContextConstraints
+    name: scc-test
+  register: scc
+  retries: 10
+  delay: 5
+  until: scc.get("resources", [])
+

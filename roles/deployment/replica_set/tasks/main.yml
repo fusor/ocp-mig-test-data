@@ -1,0 +1,22 @@
+- name: Create replica set
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'replica-set-template.yml')}}"
+
+- name: Check resource presence
+  include: check.yml
+
+- name: Create backup
+  when: with_backup
+  block:
+    - include_role:
+        name: backup
+
+- name: Restore resources
+  when: with_restore
+  block:
+    - include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml

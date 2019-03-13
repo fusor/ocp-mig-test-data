@@ -30,6 +30,8 @@ We need to keep track of supported and unsupported test cases.
   - Service - ```service```
   - NetworkPolicy - ```net-policy``` - prerequisites needed
   - Pipeline - ```pipeline```
+  - Security Context Constraints - ```scc```
+  - Replica set - ```sets```
 
 * Tests cases that are expected to fail:
 
