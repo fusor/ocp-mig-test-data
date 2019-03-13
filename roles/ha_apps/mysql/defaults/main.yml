@@ -1,0 +1,7 @@
+backup_name: ha-mysql-backup
+backup_label: ha-mysql
+restore_name: ha-mysql-restore
+namespaces_to_delete: 
+  - ha-mysql
+with_backup: true
+with_restore: true
