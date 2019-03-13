@@ -1,0 +1,30 @@
+- name: Create sample users
+  include_role:
+    name: "rbac/basic_user_role_prereq"
+  vars:
+    rbac_prereq: true
+
+- name: Create scc
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'scc-basic-template.yml')}}"
+
+- name: Check resources created
+  include: check.yml
+  
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create roles backup
+      include_role:
+        name: backup
+
+- name: Restore service account
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml

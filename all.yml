@@ -7,6 +7,8 @@
     - build-config/custom-build
     - job/cron_job_example
     - job/job_example
+    - deployment/replica_set
+    - scc
     - net-policy/net-policy-extended
     - rbac/basic_sa_with_role
     - quotas_limits/resource_quotas

@@ -1,0 +1,66 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: testrbac
+  labels:
+    app: testrbac
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: testrbac
+  name: only-read-role
+  labels:
+    app: testrbac
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: testrbac
+  name: only-read-role-binding
+  labels:
+    app: testrbac
+subjects:
+- kind: User
+  name: testuser1
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: only-read-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: testrbac
+  name: all-action-role
+  labels:
+    app: testrbac
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: testrbac
+  name: all-action-role-binding
+  labels:
+    app: testrbac
+subjects:
+- kind: User
+  name: testuser2
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: all-action-role
+  apiGroup: rbac.authorization.k8s.io

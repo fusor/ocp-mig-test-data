@@ -1,0 +1,7 @@
+backup_name: scc-backup
+backup_label: scc
+restore_name: scc-restore
+namespaces_to_delete:
+  - scc-ns
+with_backup: true
+with_restore: true

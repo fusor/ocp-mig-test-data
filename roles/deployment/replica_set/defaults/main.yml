@@ -1,0 +1,7 @@
+backup_name: rep-set-backup
+backup_label: rep-set
+restore_name: rep-set-restore
+namespaces_to_delete:
+  - rep-sets-ns
+with_backup: true
+with_restore: true

@@ -30,6 +30,8 @@ We need to keep track of supported and unsupported test cases.
   - Service - ```service```
   - NetworkPolicy - ```net-policy``` - prerequisites needed
   - Pipeline - ```pipeline```
+  - Security Context Constraints - ```scc```
+  - Replica set - ```sets```
 
 * Tests cases that are expected to fail:
 
@@ -41,3 +43,6 @@ We need to keep track of supported and unsupported test cases.
   - NetworkPolicy - ```net-policy\net-policy-extended```
     - OCP-3: ```networkPluginName: redhat/openshift-ovs-networkpolicy``` should be specified in `/etc/origin/master/master-config.yaml`, or better create new cluster under upshift with `openshift` bundle and `os_sdn_network_plugin_name` set to `ovs-networkpolicy`.
     - OCP-4: comes with default `Networkpolicy` plugin, but for editing use `oc edit networkconfig` and configure as stated in the example https://github.com/openshift/cluster-network-operator#configuring-openshiftsdn
+
+  - RBAC 
+    - ```rbac-user-roles``` For running this playbook with user creation run ```export RBAC_PREREQ=true```

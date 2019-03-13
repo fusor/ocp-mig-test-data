@@ -1,0 +1,21 @@
+- name: Check if namespace is present
+  k8s_facts:
+    kind: Namespace
+    name: rep-sets-ns
+  register: ns
+  retries: 10
+  delay: 5
+  until:  ns.get('resources', []) and
+          ns.resources[0].get('status', {}).get('phase', "") ==
+          'Active'
+
+- name: Check that ReplicaSet is up and pods are running
+  k8s_facts:
+    kind: ReplicaSet
+    name: rep-set
+    namespace: rep-sets-ns
+  register: rs
+  retries: 10
+  delay: 5
+  until:  rs.get('resources', []) and
+          rs.resources[0].get('status', {}).get('readyReplicas', 0) == 2

@@ -1,0 +1,28 @@
+- name: Prereq role
+  when: rbac_prereq
+  block:
+    - name: "Create user"
+      k8s:
+        state : present
+        definition:
+          kind: User
+          metadata:
+            name: "{{ item }}"
+      with_items: "{{ rbac_users }}"
+
+    - name: "Add basic-user role"
+      k8s:
+        state: present
+        definition:
+          apiVersion: authorization.openshift.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: "{{ item }}"
+          roleRef:
+            name: basic-user
+          subjects:
+          - kind: User
+            name: "{{ item }}"
+          userNames:
+          - "{{ item }}"
+      with_items: "{{ rbac_users }}"
