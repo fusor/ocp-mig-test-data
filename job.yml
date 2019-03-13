@@ -1,0 +1,5 @@
+- hosts: localhost
+  roles:
+    - login_ocp
+    - job/cron_job_example
+    - job/job_example

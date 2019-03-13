@@ -1,0 +1,10 @@
+backup_name: custom-build-backup
+backup_label: custom-build
+restore_name: custom-build-restore
+secret: secret101
+namespace: custom-build-ns
+build_name: ruby-sample-build
+namespaces_to_delete:
+  - custom-build-ns
+with_backup: true
+with_restore: true

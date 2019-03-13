@@ -4,6 +4,9 @@
     with_backup: false
     with_restore: false
   roles:
+    - build-config/custom-build
+    - job/cron_job_example
+    - job/job_example
     - deployment/replica_set
     - scc
     - net-policy/net-policy-extended

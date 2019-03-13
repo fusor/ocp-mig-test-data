@@ -1,0 +1,28 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: job-ns
+  labels:
+    app: job
+    
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello
+  namespace: job-ns
+  labels:
+    app: job
+spec:
+  activeDeadlineSeconds: 100
+  template:
+    metadata:
+      name: hello
+      namespace: job-ns
+    spec:
+      containers:
+      - name: hello
+        image: busybox
+        command: ["echo", "'hello world'"]
+      restartPolicy: Never

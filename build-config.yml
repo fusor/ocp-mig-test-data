@@ -1,0 +1,4 @@
+- hosts: localhost
+  roles:
+  - login_ocp
+  - build-config/custom-build
