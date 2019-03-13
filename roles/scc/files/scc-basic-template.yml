@@ -1,0 +1,40 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: scc-ns
+  labels:
+    app: scc
+
+---
+apiVersion: user.openshift.io/v1
+kind: Group
+metadata:
+  name: testusers
+  labels:
+    app: scc
+users: 
+  - testuser1
+  - testuser2
+
+---
+kind: SecurityContextConstraints
+apiVersion: v1
+metadata:
+  name: scc-test
+  labels:
+    app: scc
+allowPrivilegedContainer: true
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+fsGroup:
+  type: RunAsAny
+supplementalGroups:
+  type: RunAsAny
+users:
+  - testuser1
+  - testuser2
+groups:
+  - testusers
+
