@@ -1,0 +1,7 @@
+backup_name: ha-postgres-backup
+backup_label: ha-postgres
+restore_name: ha-postgres-restore
+namespaces_to_delete: 
+  - ha-postgres
+with_backup: true
+with_restore: true

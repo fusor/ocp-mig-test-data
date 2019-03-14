@@ -1,0 +1,26 @@
+- name: Create HA postgresql
+  block:
+    - name: Create postgresql
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'ha-postgresql-template.yml')}}"
+
+    - name: Check resource presence
+      include: check.yml
+
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore service
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml

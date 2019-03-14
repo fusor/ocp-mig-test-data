@@ -35,6 +35,7 @@ We need to keep track of supported and unsupported test cases.
 
   - S2I - ```cakephp```
   - PVC - ```mysql-pvc```
+  - HA - ```ha-postresql```
 
 * Test cases prerequisites
 

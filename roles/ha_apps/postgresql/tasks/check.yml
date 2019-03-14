@@ -1,0 +1,8 @@
+- name: Wait for posgresql to run
+  k8s_facts:
+    kind: StatefulSet
+    namespace: ha-postgres
+  register: stateful_set
+  until: stateful_set.get("resources", []) and stateful_set.resources[0].get("status", {}).get("readyReplicas", "") == 3
+  retries: 30
+  delay: 10
