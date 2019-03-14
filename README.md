@@ -32,7 +32,8 @@ We need to keep track of supported and unsupported test cases.
   - Pipeline - ```pipeline```
   - Security Context Constraints - ```scc```
   - Replica set - ```sets```
-
+  - Config map - ```config```
+  
 * Tests cases that are expected to fail:
 
   - S2I - ```cakephp```

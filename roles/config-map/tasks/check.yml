@@ -1,0 +1,64 @@
+- name: Check if namespace is present
+  k8s_facts:
+    kind: Namespace
+    name: config-map-ns
+  register: ns
+  retries: 10
+  delay: 5
+  until:  ns.get('resources', []) and
+          ns.resources[0].get('status', {}).get('phase', "") ==
+          'Active'
+
+- name: Check that config map exists
+  k8s_facts:
+    kind: ConfigMap
+    name: game-config
+    namespace: config-map-ns
+  register: cm
+  retries: 10
+  delay: 5
+  until:  cm.get('resources', [])
+
+- name: Create job and check that files exists
+  k8s:
+    state: present
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: check-config
+        namespace: config-map-ns
+        labels:
+          app: config
+      spec:
+        template:
+          metadata:
+            name: check-config
+            namespace: config-map-ns
+          spec:
+            containers:
+              - name: check-config
+                image: docker.io/alpine
+                command: ["cat", "/etc/config/special.how", "/etc/config/game.properties"]
+                volumeMounts:
+                - name: config-volume
+                  mountPath: /etc/config
+            volumes:
+              - name: config-volume
+                configMap:
+                  name: game-config
+            restartPolicy: Never
+
+- name: Get job return value
+  k8s_facts:
+    kind: Job
+    api_version: batch/v1
+    name: check-config
+    namespace: config-map-ns
+  register: job
+  retries: 10
+  delay: 5
+  until:  job.get('resources', []) and
+          job.resources[0].get('status', {}).get('conditions', [{}])[0].get('type', '')
+          == 'Complete' and
+          job.resources[0].get('status', {}).get('succeeded', 0) == 1
