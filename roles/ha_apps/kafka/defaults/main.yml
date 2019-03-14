@@ -1,0 +1,7 @@
+backup_name: ha-kafka-backup
+backup_label: ha-kafka
+restore_name: ha-kafka-restore
+namespaces_to_delete: 
+  - ha-kafka
+with_backup: true
+with_restore: true
