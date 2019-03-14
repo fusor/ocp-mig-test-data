@@ -4,6 +4,7 @@
     with_backup: false
     with_restore: false
   roles:
+    - config-map
     - build-config/custom-build
     - job/cron_job_example
     - job/job_example
