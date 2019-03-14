@@ -1,0 +1,4 @@
+- hosts: localhost
+  roles:
+  - login_ocp
+  - ha_apps/mysql
