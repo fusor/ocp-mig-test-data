@@ -1,0 +1,26 @@
+- name: Create kafka
+  block:
+    - name: Create kafka
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'ha-kafka-template.yml')}}"
+
+    - name: Check resource presence
+      include: check.yml
+
+- name: Create backup
+  when: with_backup
+  block:
+    - name: Create backup
+      include_role:
+        name: backup
+
+- name: Restore resource
+  when: with_restore
+  block:
+    - name: Start restoring 
+      include_role:
+        name: restore
+
+    - name: Check resource presence
+      include: check.yml
