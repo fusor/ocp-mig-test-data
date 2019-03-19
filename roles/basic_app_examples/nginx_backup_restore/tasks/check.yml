@@ -1,7 +1,7 @@
 - name: Wait 2 minutes for nginx deployment
   k8s_facts:
     kind: Deployment
-    api_version: apps/v1
+    api_version: apps/v1beta1
     namespace: nginx-example
     label_selectors: "app=nginx"
   register: deploy
