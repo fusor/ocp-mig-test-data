@@ -25,9 +25,9 @@ function install_velero() {
   cd ocp-velero-ansible/
   mkdir auth
   cat $HOME/.kube/config > auth/kubeconfig
-  grep -v "login_ocp" launch-ark.yml > temp && mv temp launch-ark.yml
+  grep -v "login_ocp" launch-velero.yml > temp && mv temp launch-velero.yml
   echo "Launching velero"
-  ansible-playbook launch-ark.yml
+  ansible-playbook launch-velero.yml -e velero_provider=minio
 }
 
 prepare
