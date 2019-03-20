@@ -1,12 +1,12 @@
-- name: Create ark backup of resources
+- name: Create velero backup of resources
   k8s:
     state : present
     definition: 
-      apiVersion: ark.heptio.com/v1
+      apiVersion: velero.io/v1
       kind: Backup
       metadata:
         name: "{{ backup_name }}"
-        namespace: heptio-ark
+        namespace: velero
       spec:
         labelSelector:
           matchLabels:
@@ -19,8 +19,8 @@
 - name: Wait for backup to complete
   k8s_facts:
     kind: Backup
-    api_version: ark.heptio.com/v1
-    namespace: heptio-ark
+    api_version: velero.io/v1
+    namespace: velero
     name: "{{ backup_name }}"
   register: backup
   until:  backup.get("resources", []) | length > 0
