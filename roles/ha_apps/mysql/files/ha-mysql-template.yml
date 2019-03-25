@@ -59,21 +59,6 @@ spec:
     app: ha-mysql
 
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: mysql-pvc
-  namespace: ha-mysql
-  labels:
-    app: ha-mysql
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -157,7 +142,6 @@ spec:
           mountPath: /etc/mysql/conf.d
         resources:
           requests:
-            cpu: 500m
             memory: 1Gi
       - name: xtrabackup
         image: gcr.io/google-samples/xtrabackup:1.0
@@ -215,7 +199,6 @@ spec:
           mountPath: /etc/mysql/conf.d
         resources:
           requests:
-            cpu: 100m
             memory: 100Mi
       volumes:
       - name: conf
@@ -223,6 +206,11 @@ spec:
       - name: config-map
         configMap:
           name: mysql
-      - name: data
-        persistentVolumeClaim:
-          claimName: mysql-pvc
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
