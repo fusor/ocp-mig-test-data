@@ -5,25 +5,16 @@
         state : present
         definition: "{{ lookup('file', 'mysql-persistent-template.yml')}}"
 
-    - name: Wait for mysql with pvc deployment
-      k8s_facts:
-        kind: Pod
-        namespace: mysql-persistent
-        label_selectors: "deployment=mysql-1"
-      register: pod
-      until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
-      retries: 10
-      delay: 15
+    - name: Check if deployed and bound
+      include: check.yml
 
-    - name: Check if volume is bound
-      k8s_facts:
-        kind: PersistentVolumeClaim
-        namespace: mysql-persistent
-        label_selectors: "app=mysql"
-      register: volume
-      until: volume.get("resources", []) and volume.resources[0].get("status", {}).get("phase", "") == "Bound"
-      retries: 10
-      delay: 15
+- name: Populate the database with test data
+  when: with_data
+  vars:
+    pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
+  shell: |
+          oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "curl https://gist.githubusercontent.com/evgeny-chufarov/b7ddea60a1d16b534462833fc23a32b7/raw/9d126b8d706a77c3cf24d75c6961e8ed50d00f27/mysql-data.sql > data.sql"
+          oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < data.sql"
 
 - name: Create a backup
   when: with_backup
@@ -35,26 +26,9 @@
 - name: Restore service
   when: with_restore
   block:
-    - name: Start restoring 
+    - name: Start restoring
       include_role:
         name: restore
 
-    - name: Wait for mysql with pvc deployment
-      k8s_facts:
-        kind: Pod
-        namespace: mysql-persistent
-        label_selectors: "deployment=mysql-1"
-      register: pod
-      until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
-      retries: 10
-      delay: 15
-
-    - name: Check if volume is restored and bound
-      k8s_facts:
-        kind: PersistentVolumeClaim
-        namespace: mysql-persistent
-        label_selectors: "app=mysql"
-      register: volume
-      until: volume.get("resources", []) and volume.get("status", {}).get("phase", "") == "Bound"
-      retries: 10
-      delay: 15
+    - name: Check if restored and bound
+      include: check.yml
