@@ -33,12 +33,12 @@ We need to keep track of supported and unsupported test cases.
   - Security Context Constraints - ```scc```
   - Replica set - ```sets```
   - Config map - ```config```
+  - PVC - ```mysql-pvc```
   
 * Tests cases that are expected to fail:
 
   - S2I - ```cakephp```
-  - PVC - ```mysql-pvc```
-  - HA - ```ha-mysql```, ```ha-etcd```, ```ha-kafka```
+  - HA - ```ha-mysql```, ```ha-etcd```, ```ha-kafka```, ```ha-etcd-operator```
 
 * Test cases prerequisites
 

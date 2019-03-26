@@ -1,0 +1,7 @@
+backup_name: etcd-operator-backup
+backup_label: etcd-operator
+restore_name: etcd-operator-restore
+namespaces_to_delete: 
+  - etcd-operator
+with_backup: true
+with_restore: true
