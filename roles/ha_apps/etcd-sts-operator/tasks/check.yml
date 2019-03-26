@@ -1,0 +1,40 @@
+- name: Wait for etcd to run
+  k8s_facts:
+    kind: Deployment
+    api_version: apps/v1
+    namespace: etcd-operator
+  register: deploy
+  until:  deploy.get("resources", [])
+          and deploy.resources[0].get("spec", {}).get("replicas", -1) == deploy.resources[0].get("status", {}).get("availableReplicas", 0)
+  retries: 20
+  delay: 10
+
+- name: Wait for example-etcd-cluster-0 to run
+  k8s_facts:
+    kind: Pod
+    namespace: etcd-operator
+    name: example-etcd-cluster-0
+  register: pod
+  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  retries: 20
+  delay: 10
+
+- name: Wait for example-etcd-cluster-1 to run
+  k8s_facts:
+    kind: Pod
+    namespace: etcd-operator
+    name: example-etcd-cluster-1
+  register: pod
+  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  retries: 20
+  delay: 10
+
+- name: Wait for example-etcd-cluster-2 to run
+  k8s_facts:
+    kind: Pod
+    namespace: etcd-operator
+    name: example-etcd-cluster-2
+  register: pod
+  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  retries: 20
+  delay: 10

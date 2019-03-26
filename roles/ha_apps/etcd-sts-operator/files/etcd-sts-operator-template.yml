@@ -1,0 +1,188 @@
+#
+#
+# https://github.com/alaypatel07/etcd-sts-operator/
+#
+#
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: etcd-operator
+  labels:
+    app: etcd-operator
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: etcd-ansible-operator
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ansible-operator
+  labels:
+    app: etcd-operator
+rules:
+- apiGroups:
+  - etcd.database.coreos.com
+  - extensions
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - "*"
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: default-account-app-operator
+  labels:
+    app: etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: etcd-ansible-operator
+  namespace: etcd-operator
+roleRef:
+  kind: ClusterRole
+  name: ansible-operator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: etcdclusters.etcd.database.coreos.com
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+spec:
+  group: etcd.database.coreos.com
+  names:
+    kind: EtcdCluster
+    listKind: EtcdClusterList
+    plural: etcdclusters
+    shortNames:
+    - etcd
+    singular: etcdcluster
+  scope: Namespaced
+  version: v1beta2
+  subresources:
+    status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: etcdbackups.etcd.database.coreos.com
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+spec:
+  group: etcd.database.coreos.com
+  names:
+    kind: EtcdBackup
+    listKind: EtcdBackupList
+    plural: etcdbackups
+    shortNames:
+    singular: etcdbackup
+  scope: Namespaced
+  version: v1beta2
+  subresources:
+    status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: etcdrestores.etcd.database.coreos.com
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+spec:
+  group: etcd.database.coreos.com
+  names:
+    kind: EtcdRestore
+    listKind: EtcdRestoreList
+    plural: etcdrestores
+    shortNames:
+    singular: etcdrestore
+  scope: Namespaced
+  version: v1beta2
+  subresources:
+    status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd-ansible-operator
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: etcd-ansible-operator
+  template:
+    metadata:
+      labels:
+        name: etcd-ansible-operator
+    spec:
+      serviceAccountName: etcd-ansible-operator
+      containers:
+        - name: etcd-ansible-operator
+          image: docker.io/alaypatel07/etcd-ansible-operator:sts
+          ports:
+          - containerPort: 60000
+            name: metrics
+          imagePullPolicy: Always
+          env:
+          - name: WATCH_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: OPERATOR_NAME
+            value: "etcd-ansible-operator"
+
+---
+apiVersion: "etcd.database.coreos.com/v1beta2"
+kind: "EtcdCluster"
+metadata:
+  name: "example-etcd-cluster"
+  namespace: etcd-operator
+  labels:
+    app: etcd-operator
+spec:
+  size: 3
+  version: "3.2.13"
