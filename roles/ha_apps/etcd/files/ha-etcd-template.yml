@@ -45,20 +45,6 @@ spec:
     app: etcd
 
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: etcd-pvc
-  namespace: etcd
-  labels:
-    app: etcd
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -110,8 +96,13 @@ spec:
               --initial-cluster-token etcd-cluster-1 \
               --initial-cluster ${PEERS} \
               --initial-cluster-state new \
-              --data-dir /var/run/etcd/default.etcd
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: etcd-pvc
+              --data-dir /var/run/etcd/default.etcd 
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 1Gi

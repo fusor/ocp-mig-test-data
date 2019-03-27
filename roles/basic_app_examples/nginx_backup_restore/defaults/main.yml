@@ -3,6 +3,7 @@ backup_label: nginx
 restore_name: nginx-restore
 namespaces_to_delete:
   - nginx-example
+create_resources: true
 with_backup: true
 with_restore: true
 state: present

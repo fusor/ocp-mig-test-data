@@ -1,14 +1,12 @@
-# https://github.com/fusor/ocp-velero-ansible/tree/master/roles
----
-- block:
-    - name: Create Nginx application
+- name: Create etcd-sts-operator
+  block:
+    - name: Create etcd-sts-operator
       k8s:
-        state: "{{ state }}"
-        definition: "{{ lookup('file', 'base.yml')}}"
+        state: present
+        definition: "{{ lookup('file', 'etcd-sts-operator-template.yml')}}"
 
     - name: Check resource presence
       include: check.yml
-  when: create_resources 
 
 - name: Create backup
   when: with_backup
@@ -17,7 +15,7 @@
       include_role:
         name: backup
 
-- name: Restore resources
+- name: Restore service
   when: with_restore
   block:
     - name: Start restoring 
