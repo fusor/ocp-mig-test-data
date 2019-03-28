@@ -3,6 +3,7 @@ backup_label: mysql
 restore_name: mysql-persistent-restore
 namespaces_to_delete:
   - mysql-persistent
+with_resources: true
 with_backup: true
 with_restore: true
 with_data: false

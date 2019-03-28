@@ -1,16 +1,22 @@
-- name: Create replica set
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'replica-set-template.yml')}}"
-
-- name: Check resource presence
-  include: check.yml
-
-- name: Create backup
-  when: with_backup
+- name: Create resources
   block:
-    - include_role:
-        name: backup
+    - name: Create replica set
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'replica-set-template.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
+
+    - name: Check resource presence
+      include: check.yml
+  when: with_resources
+  
+- name: Create backup
+  include_role:
+    name: backup
+  when: with_backup
 
 - name: Restore resources
   when: with_restore

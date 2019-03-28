@@ -1,4 +1,4 @@
-- name: Deploy mysql with pvc
+- name: Create resources
   block:
     - name: Deploy mysql with pvc from yml
       k8s:
@@ -8,13 +8,14 @@
     - name: Check if deployed and bound
       include: check.yml
 
-- name: Populate the database with test data
-  when: with_data
-  vars:
-    pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
-  shell: |
-          oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "curl https://gist.githubusercontent.com/evgeny-chufarov/b7ddea60a1d16b534462833fc23a32b7/raw/9d126b8d706a77c3cf24d75c6961e8ed50d00f27/mysql-data.sql > data.sql"
-          oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < data.sql"
+    - name: Populate the database with test data
+      when: with_data
+      vars:
+        pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
+      shell: |
+              oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "curl https://gist.githubusercontent.com/evgeny-chufarov/b7ddea60a1d16b534462833fc23a32b7/raw/9d126b8d706a77c3cf24d75c6961e8ed50d00f27/mysql-data.sql > data.sql"
+              oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < data.sql"
+  when: with_resources
 
 - name: Create a backup
   when: with_backup

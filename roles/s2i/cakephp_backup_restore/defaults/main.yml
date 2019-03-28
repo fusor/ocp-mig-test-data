@@ -3,5 +3,6 @@ backup_label: hello-openshift
 restore_name: cakephp-restore
 namespaces_to_delete:
   - cakephp-example
+with_resources: true
 with_backup: true
 with_restore: true

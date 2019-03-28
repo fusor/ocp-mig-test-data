@@ -5,16 +5,19 @@
       k8s:
         state: present
         definition: "{{ lookup('file', 'install-pipeline-example.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
     - name: Check resource presence
       include: check.yml
-
-- name: Create a backup
+  when: with_resources
+  
+- name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore pipeline
   when: with_restore

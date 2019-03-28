@@ -1,6 +1,9 @@
 backup_name: net-pol-backup
 backup_label: net-policy
 restore_name: net-pol-restore
+with_resources: true
+with_backup: true
+with_restore: true
 namespaces_to_delete:
   - net-pr-1
   - net-pr-2

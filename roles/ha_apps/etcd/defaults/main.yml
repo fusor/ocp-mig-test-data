@@ -3,5 +3,6 @@ backup_label: etcd
 restore_name: etcd-restore
 namespaces_to_delete: 
   - etcd
+with_resources: true
 with_backup: true
 with_restore: true

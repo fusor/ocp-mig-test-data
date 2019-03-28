@@ -18,7 +18,7 @@
   delay: 10
   until:  build.get("resources", [])
 
-- name: Check for build completed
+- name: Check for build completion
   k8s_facts:
     kind: Build
     api_version: build.openshift.io/v1

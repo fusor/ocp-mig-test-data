@@ -1,19 +1,22 @@
-- name: Deploy nginx-deployment
+- name: Create resources
   block:
     - name: Deploy nginx-deployment pod using deployment resource
       k8s:
         state: present
         definition: "{{ lookup('file', 'nginx-deployment-template.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
     - name: Check resource presence
       include: check.yml
-
+  when: with_resources
+  
 - name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore service
   when: with_restore
