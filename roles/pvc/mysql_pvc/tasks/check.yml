@@ -8,12 +8,12 @@
   retries: 10
   delay: 15
 
-- name: Check if volume is restored and bound
+- name: Check if volume is bound
   k8s_facts:
     kind: PersistentVolumeClaim
     namespace: mysql-persistent
     label_selectors: "app=mysql"
   register: volume
-  until: volume.get("resources", []) and volume.get("status", {}).get("phase", "") == "Bound"
+  until: volume.get("resources", []) and volume.resources[0].get("status", {}).get("phase", "") == "Bound"
   retries: 10
   delay: 15

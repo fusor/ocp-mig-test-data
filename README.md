@@ -13,6 +13,8 @@ Run ```ansible-playbook cake-php.yml``` to deploy, backup and restore a sample a
 
 It's also possible to optionally run backup/restore: ```ansible-playbook cake-php.yml -e with_backup=false -e with_restore=false```
 
+There is an option for populating the database with test data: ```ansible-playbook mysql-pvc.yml -e with_data=true```
+
 Loging in to cluster can be enabled by setting PROMPT_LOGIN: ```export PROMPT_LOGIN=true```
 
 # Test cases info
@@ -34,7 +36,7 @@ We need to keep track of supported and unsupported test cases.
   - Replica set - ```sets```
   - Config map - ```config```
   - PVC - ```mysql-pvc```
-  
+
 * Tests cases that are expected to fail:
 
   - S2I - ```cakephp```
@@ -46,5 +48,5 @@ We need to keep track of supported and unsupported test cases.
     - OCP-3: ```networkPluginName: redhat/openshift-ovs-networkpolicy``` should be specified in `/etc/origin/master/master-config.yaml`, or better create new cluster under upshift with `openshift` bundle and `os_sdn_network_plugin_name` set to `ovs-networkpolicy`.
     - OCP-4: comes with default `Networkpolicy` plugin, but for editing use `oc edit networkconfig` and configure as stated in the example https://github.com/openshift/cluster-network-operator#configuring-openshiftsdn
 
-  - RBAC 
+  - RBAC
     - ```rbac-user-roles``` For running this playbook with user creation run ```export RBAC_PREREQ=true```
