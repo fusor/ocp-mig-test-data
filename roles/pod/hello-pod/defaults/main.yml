@@ -3,5 +3,6 @@ backup_label: hello-openshift
 restore_name: hellopod-restore
 namespaces_to_delete:
   - hello-pod
+with_resources: true
 with_backup: true
 with_restore: true

@@ -31,13 +31,12 @@
 
     - name: Check resource presence
       include: check.yml
+  when: with_resources
 
-- name: Create a backup
+- name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore pod
   when: with_restore

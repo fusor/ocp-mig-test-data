@@ -1,4 +1,4 @@
-- name: Create role and role bindings
+- name: Create resources
   block:
     - name: Start role creation
       k8s:
@@ -7,13 +7,12 @@
 
     - name: Check resource presence
       include: check.yml
+  when: with_resources
 
 - name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create roles backup
-      include_role:
-        name: backup
 
 - name: Restore service account
   when: with_restore

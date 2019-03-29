@@ -5,10 +5,15 @@
       k8s:
         state: present
         definition: "{{ lookup('file', 'service-template.yml') }}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
     - name: Check resource presence
       include: check.yml
-
+  when: with_resources
+  
 - name: Create a backup
   when: with_backup
   block:

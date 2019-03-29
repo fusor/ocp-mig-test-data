@@ -26,5 +26,5 @@
   until:  backup.get("resources", []) | length > 0
           and backup.resources[0].get("status", {}).get("phase", "Completed")
           == "Completed"
-  retries: 20
-  delay: 30
+  retries: 120
+  delay: 5

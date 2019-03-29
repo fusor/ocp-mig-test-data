@@ -1,15 +1,22 @@
-- name: Preprocess resources template
-  template:
-    src: custom-build-template.yml.j2
-    dest: "{{ role_path }}/files/custom-build-template.yml"
+- name: Create resources
+  block:
+    - name: Preprocess resources template
+      template:
+        src: custom-build-template.yml.j2
+        dest: "{{ role_path }}/files/custom-build-template.yml"
 
-- name: Deploy build config
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'custom-build-template.yml')}}"
+    - name: Deploy build config
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'custom-build-template.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
-- name: Check resource presence
-  include: check.yml
+    - name: Check resource presence
+      include: check.yml
+  when: with_resources
 
 - name: Create backup
   include_role:

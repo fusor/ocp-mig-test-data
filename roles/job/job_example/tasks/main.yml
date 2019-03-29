@@ -1,11 +1,18 @@
-- name: Deploy job
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'job-template.yml') }}"
+- name: Create resources
+  block:
+    - name: Deploy job
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'job-template.yml') }}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
-- name: Check resource presence
-  include: check.yml
-
+    - name: Check resource presence
+      include: check.yml
+  when: with_resources
+  
 - name: Create backup
   include_role:
     name: backup

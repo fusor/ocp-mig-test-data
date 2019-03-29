@@ -1,6 +1,7 @@
 # https://github.com/fusor/ocp-velero-ansible/tree/master/roles
 ---
-- block:
+- name: Create resources
+  block:
     - name: Create Nginx application
       k8s:
         state: "{{ state }}"
@@ -8,14 +9,12 @@
 
     - name: Check resource presence
       include: check.yml
-  when: create_resources 
+  when: with_resources 
 
 - name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore resources
   when: with_restore

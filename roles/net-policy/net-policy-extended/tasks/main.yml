@@ -1,38 +1,39 @@
 - name: Create resources
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'net-pol-template.yml') }}"
-
-- name: Create pod separately
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Pod
-      metadata:
-        namespace: net-pr-2
-        name: httpd-ex
-        labels:
-          app: net-policy
-      spec:
-        containers:
-          - name: hello-openshift
-            image: centos/httpd-24-centos7
-
-- name: Test resources
-  include: check.yml
-
-- name: Create resources
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'net-pol-nets-template.yml') }}"
-
-- name: Create backup
-  when: with_backup
   block:
-    - name: Create backup
-      include_role:
-        name: backup
+    - name: Create namespaces and pods
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'net-pol-template.yml') }}"
+
+    - name: Create pod separately
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            namespace: net-pr-2
+            name: httpd-ex
+            labels:
+              app: net-policy
+          spec:
+            containers:
+              - name: hello-openshift
+                image: centos/httpd-24-centos7
+
+    - name: Test resources
+      include: check.yml
+
+    - name: Create network policy
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'net-pol-nets-template.yml') }}"
+  when: with_resources
+  
+- name: Create backup
+  include_role:
+    name: backup
+  when: with_backup
 
 - name: Restore service
   when: with_restore
@@ -41,5 +42,5 @@
       include_role:
         name: restore
 
-- name: Test resources
-  include: check.yml
+    - name: Test resources
+      include: check.yml

@@ -15,8 +15,9 @@
               and pod.resources[0].get("status", {}).get("phase", "") == "Running"
       retries: 20
       delay: 30
+  when: with_resources
 
-- name: Create a backup of cakephp
+- name: Create backup
   when: with_backup
   block:
     - name: Create backup

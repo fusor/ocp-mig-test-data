@@ -3,5 +3,6 @@ backup_label: nginx-deployment
 restore_name: nginx-deployment-restore
 namespaces_to_delete:
   - nginx-deployment
+with_resources: true
 with_backup: true
 with_restore: true

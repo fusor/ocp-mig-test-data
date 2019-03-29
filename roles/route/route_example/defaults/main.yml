@@ -3,5 +3,6 @@ backup_label: route
 restore_name: route-restore
 namespaces_to_delete:
   - route-example
+with_resources: true
 with_backup: true
 with_restore: true

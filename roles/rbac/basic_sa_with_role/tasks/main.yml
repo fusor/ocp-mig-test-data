@@ -1,19 +1,22 @@
-- name: Create service account
+- name: Create resources
   block:
     - name: Create service account, role and role binding
       k8s:
         state: present
         definition: "{{ lookup('file', 'basic-sa-role-template.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
     - name: Check resource presence
       include: check.yml
-
+  when: with_resources
+  
 - name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore service account
   when: with_restore

@@ -3,6 +3,7 @@
     state: present
     with_backup: false
     with_restore: false
+    with_resources: true
   roles:
     - config-map
     - build-config/custom-build

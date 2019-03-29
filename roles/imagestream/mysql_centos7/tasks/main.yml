@@ -1,19 +1,22 @@
-- name: Create is
+- name: Create resources
   block:
     - name: Create image stream
       k8s:
         state: present
         definition: "{{ lookup('file', 'mysql-centos7-is-example.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
     - name: Check resource presence
       include: check.yml
-
+  when: with_resources
+  
 - name: Create backup
+  include_role:
+    name: backup
   when: with_backup
-  block:
-    - name: Create backup
-      include_role:
-        name: backup
 
 - name: Restore resource
   when: with_restore

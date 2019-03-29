@@ -3,5 +3,6 @@ backup_label: config
 restore_name: config-restore
 namespaces_to_delete:
   - config-map-ns
+with_resources: true
 with_backup: true
 with_restore: true

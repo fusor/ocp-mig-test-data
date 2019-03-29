@@ -1,5 +1,8 @@
 backup_name: quota-limit-backup
 backup_label: quotas
 restore_name: quota-limit-restore
+with_backup: true
+with_restore: true
+with_resources: true
 namespaces_to_delete:
   - quota-pr

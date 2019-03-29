@@ -1,16 +1,23 @@
-- name: Create sample users
-  include_role:
-    name: "rbac/basic_user_role_prereq"
-  vars:
-    rbac_prereq: true
+- name: Create backup
+  block:
+    - name: Create sample users
+      include_role:
+        name: "rbac/basic_user_role_prereq"
+      vars:
+        rbac_prereq: true
 
-- name: Create scc
-  k8s:
-    state: present
-    definition: "{{ lookup('file', 'scc-basic-template.yml')}}"
+    - name: Create scc
+      k8s:
+        state: present
+        definition: "{{ lookup('file', 'scc-basic-template.yml')}}"
+      register: deploy
+      retries: 10
+      delay: 3
+      until: deploy is succeeded
 
-- name: Check resources created
-  include: check.yml
+    - name: Check resources created
+      include: check.yml
+  when: with_resources
   
 - name: Create backup
   when: with_backup

@@ -3,5 +3,6 @@ backup_label: testrbac
 restore_name: role-restore
 namespaces_to_delete:
   - testrbac
+with_resources: true
 with_backup: true
 with_restore: true
