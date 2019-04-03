@@ -12,9 +12,12 @@
       when: with_data
       vars:
         pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
+        src: "{{ playbook_dir }}/roles/pvc/mysql_pvc/files/"
+        dest: /opt/app-root/src
       shell: |
-              oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "curl https://gist.githubusercontent.com/evgeny-chufarov/b7ddea60a1d16b534462833fc23a32b7/raw/9d126b8d706a77c3cf24d75c6961e8ed50d00f27/mysql-data.sql > data.sql"
+              oc rsync {{ src }} {{ pod_name }}:{{ dest }} --exclude=* --include=*.sql
               oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < data.sql"
+
   when: with_resources
 
 - name: Create a backup
