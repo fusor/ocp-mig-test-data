@@ -4,10 +4,10 @@
     namespace: mysql-persistent
     label_selectors: "deployment=mysql-1"
   register: pod
-  until: pod.get("resources", []) and pod.resources[0].get("status", {}).get("phase", "") == "Running"
+  until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
   retries: 10
-  delay: 15
-
+  delay: 10
+  
 - name: Check if volume is bound
   k8s_facts:
     kind: PersistentVolumeClaim
