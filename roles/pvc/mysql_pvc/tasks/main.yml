@@ -13,15 +13,12 @@
         - name: Populating db with data
           vars:
             pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
-            src: "{{ playbook_dir }}/roles/pvc/mysql_pvc/files/"
+            src: "{{ playbook_dir }}/roles/pvc/mysql_pvc/files/data.sql"
             dest: /opt/app-root/src
           shell: |
-                  oc rsync -n mysql-persistent {{ src }} {{ pod_name }}:{{ dest }} --exclude=* --include=*.sql
-                  oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < data.sql"
-        - name: Wait 1 munite for MySQL service to Start
-          pause:
-            minutes: 1
-
+                  oc cp -n mysql-persistent {{ src }} {{ pod_name }}:{{ dest }}
+                  oc exec -n mysql-persistent {{ pod_name }} -- /bin/bash -c "mysql -uMYSQL_USER -pMYSQL_PASSWORD MYSQL_DATABASE < {{ dest }}/data.sql"
+        
         - name: Flush tables with read lock before backup
           vars:
             pod_name: "{{ pod.resources[0].get('metadata', {}).get('name', '') }}"
